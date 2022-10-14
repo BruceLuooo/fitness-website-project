@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import { useEffect, useState } from 'react';
+import { useError } from '../../hooks/useError';
 import axios from 'axios';
 import DropdownMenu from '../DropdownMenu';
 import DownArrow from '../../assets/svg/downArrow.svg';
@@ -65,6 +66,8 @@ const SearchExercises = () => {
 			border: 1px solid black;
 		`,
 	};
+
+	const { error, setError } = useError();
 
 	const typeOfExercises = [
 		{ label: 'cardio' },
@@ -166,7 +169,11 @@ const SearchExercises = () => {
 			]);
 		});
 
-		// console.log(data);
+		if (data.length === 0) {
+			setError({ active: true, message: 'No Workout Found' });
+		} else {
+			setError({ active: false, message: '' });
+		}
 	};
 
 	const addToWorkoutPlan = async (
@@ -230,6 +237,7 @@ const SearchExercises = () => {
 						)}
 					</div>
 				</div>
+				{error && <div>{error.message}</div>}
 				<button type='submit'>Find</button>
 			</form>
 			<div css={styles.resultsContainer}>
