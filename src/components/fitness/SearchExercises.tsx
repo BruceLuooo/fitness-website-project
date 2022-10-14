@@ -88,7 +88,7 @@ const SearchExercises = () => {
 	];
 
 	useEffect(() => {
-		const handler = () => setOpenMenu({ active: false, index: 0 });
+		const handler = () => setOpenMenu(0);
 
 		window.addEventListener('click', handler);
 	});
@@ -100,13 +100,13 @@ const SearchExercises = () => {
 		},
 		muscleGroup: '',
 	});
-	const [openMenu, setOpenMenu] = useState({ active: false, index: 0 });
+	const [openMenu, setOpenMenu] = useState(0);
 	const [data, setData] = useState<Data[]>([]);
 	const [workoutPlan, setWorkoutPlan] = useState<WorkoutData[]>([]);
 
 	const onClick = (e: React.MouseEvent<HTMLDivElement>, number: number) => {
 		e.stopPropagation();
-		setOpenMenu({ active: true, index: number });
+		setOpenMenu(number);
 	};
 
 	const onSelectedOption = (label: string, value: number) => {
@@ -203,7 +203,7 @@ const SearchExercises = () => {
 							</div>
 							<img src={DownArrow} alt='' css={styles.icon} />
 						</div>
-						{openMenu.active === true && openMenu.index === 1 && (
+						{openMenu === 1 && (
 							<DropdownMenu
 								selectOptions={typeOfExercises}
 								onSelectedOption={onSelectedOption}
@@ -222,7 +222,7 @@ const SearchExercises = () => {
 							</div>
 							<img src={DownArrow} alt='' css={styles.icon} />
 						</div>
-						{openMenu.active === true && openMenu.index === 2 && (
+						{openMenu === 2 && (
 							<DropdownMenu
 								selectOptions={muscleGroup}
 								onSelectedOption={onSelectedOption}
@@ -245,10 +245,10 @@ const SearchExercises = () => {
 					</div>
 				))}
 			</div>
-			{/* <CreateWorkoutPlan
+			<CreateWorkoutPlan
 				workoutPlan={workoutPlan}
 				setWorkoutPlan={setWorkoutPlan}
-			/> */}
+			/>
 		</div>
 	);
 };

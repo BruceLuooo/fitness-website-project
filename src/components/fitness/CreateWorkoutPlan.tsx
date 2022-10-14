@@ -44,10 +44,15 @@ const CreateWorkoutPlan: FC<Props> = ({ workoutPlan, setWorkoutPlan }) => {
 	};
 
 	const reorder = (e: any, data: data) => {
-		console.log(e.target.id);
-		const newIndex = workoutPlan
-			.map(workout => workout.index)
-			.indexOf(data.index + e.target.id === 'up' ? -2 : 0);
+		const newIndex =
+			workoutPlan.map(workout => workout.name).indexOf(data.name) +
+			(e.target.id === 'up' ? -1 : 1);
+
+		console.log(newIndex);
+
+		if (newIndex < 0 || newIndex > workoutPlan.length) {
+			return;
+		}
 
 		const newArray = workoutPlan.filter(
 			workout => workout.index !== data.index,
