@@ -1,7 +1,8 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import logo from '../assets/Trifecta-Logo.jpeg';
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAuth } from 'firebase/auth';
 
 const Navbar = () => {
 	const styles = {
@@ -51,6 +52,16 @@ const Navbar = () => {
 		`,
 	};
 
+	const navigate = useNavigate();
+	const auth = getAuth();
+	const token = localStorage.getItem('token');
+
+	const logout = (e: React.MouseEvent<HTMLButtonElement>) => {
+		auth.signOut();
+		localStorage.removeItem('token');
+		navigate('/');
+	};
+
 	return (
 		<div css={styles.container}>
 			<div css={styles.navbarContainer}>
@@ -77,16 +88,27 @@ const Navbar = () => {
 								Nutrition
 							</a>
 						</li>
-						<li>
-							<a css={styles.navigationItems} href='/login'>
-								Login
-							</a>
-						</li>
-						<li>
-							<a css={styles.navigationItems} href='/profile/overview'>
-								Profile
-							</a>
-						</li>
+						{!token && (
+							<li>
+								<a css={styles.navigationItems} href='/login'>
+									Login
+								</a>
+							</li>
+						)}
+						{token && (
+							<div>
+								<li>
+									<a css={styles.navigationItems} href='/profile/overview'>
+										Profile
+									</a>
+								</li>
+								<li>
+									<button css={styles.navigationItems} onClick={logout}>
+										Logout
+									</button>
+								</li>
+							</div>
+						)}
 					</ul>
 				</div>
 			</div>

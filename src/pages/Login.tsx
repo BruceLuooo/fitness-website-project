@@ -5,6 +5,12 @@ import show from '../assets/showPassword.png';
 import hide from '../assets/hidePassword.png';
 import { useNavigate } from 'react-router-dom';
 import { useError } from '../hooks/useError';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+
+interface login {
+	email: string;
+	password: string;
+}
 
 const Login = () => {
 	const styles = {
@@ -69,13 +75,8 @@ const Login = () => {
 	const { error, setError } = useError();
 	const navigate = useNavigate();
 
-	interface login {
-		login: string;
-		password: string;
-	}
-
 	const [loginInfo, setLoginInfo] = useState<login>({
-		login: '',
+		email: '',
 		password: '',
 	});
 	const [showPassword, setShowPassword] = useState(false);
@@ -87,15 +88,31 @@ const Login = () => {
 		}));
 	};
 
-	const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		if (loginInfo.login === '' || loginInfo.password === '') {
+		if (loginInfo.email === '' || loginInfo.password === '') {
 			return setError({ active: true, message: 'Please fill in all fields' });
 		}
 
-		setError({ active: false, message: '' });
-		return navigate('/profile');
+		try {
+			const auth = getAuth();
+
+			const { user } = await signInWithEmailAndPassword(
+				auth,
+				loginInfo.email,
+				loginInfo.password,
+			);
+
+			if (user) {
+				setError({ active: false, message: '' });
+				const token = await user.getIdToken();
+				localStorage.setItem('token', token);
+				navigate('/profile/overview');
+			}
+		} catch (error) {
+			return setError({ active: true, message: 'Invalid Email/Passowrd' });
+		}
 	};
 
 	return (
@@ -103,10 +120,10 @@ const Login = () => {
 			<div css={styles.logoFont}>Sign Into Your Account</div>
 			<form css={styles.formContainer} onSubmit={onSubmit}>
 				<div css={styles.input}>
-					<label htmlFor='login'>Username</label>
+					<label htmlFor='email'>Email</label>
 					<input
 						css={styles.inputBox}
-						id='login'
+						id='email'
 						type='text'
 						onChange={onChange}
 					/>

@@ -12,6 +12,8 @@ import Fitness from './pages/Fitness';
 import PersonalInfo from './pages/Profile/PersonalInfo';
 import PersonalNutrition from './pages/Profile/PersonalNutrition';
 import PersonalFitness from './pages/Profile/PesrsonalFitness';
+import PrivateRoute from './components/PrivateRoute';
+import PageNotFound from './pages/PageNotFound';
 
 function App() {
 	return (
@@ -39,10 +41,13 @@ function App() {
 				<Route path='/fitness' element={<Fitness />} />
 				<Route path='/login' element={<Login />} />
 				<Route path='/register' element={<Register />} />
-				<Route path='/profile/overview' element={<Overview />} />
-				<Route path='/profile/nutrition' element={<PersonalNutrition />} />
-				<Route path='/profile/fitness' element={<PersonalFitness />} />
-				<Route path='/profile/personal-info' element={<PersonalInfo />} />
+				<Route path='/profile' element={<PrivateRoute />}>
+					<Route path='/profile/overview' element={<Overview />} />
+					<Route path='/profile/nutrition' element={<PersonalNutrition />} />
+					<Route path='/profile/fitness' element={<PersonalFitness />} />
+					<Route path='/profile/personal-info' element={<PersonalInfo />} />
+				</Route>
+				<Route path='/*' element={<PageNotFound />} />
 			</Routes>
 		</Router>
 	);

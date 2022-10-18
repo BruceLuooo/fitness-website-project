@@ -1,7 +1,10 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import { FC, useRef, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useError } from '../../hooks/useError';
+import { doc, setDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { db } from '../../firebase.config';
 import remove from '../../assets/svg/red-x-icon.svg';
 
 interface data {
@@ -14,6 +17,10 @@ interface data {
 interface Props {
 	workoutPlan: data[];
 	setWorkoutPlan: Function;
+}
+
+interface Workoutplan {
+	[key: string]: any;
 }
 
 const CreateWorkoutPlan: FC<Props> = ({ workoutPlan, setWorkoutPlan }) => {
@@ -31,8 +38,17 @@ const CreateWorkoutPlan: FC<Props> = ({ workoutPlan, setWorkoutPlan }) => {
 	};
 
 	const { error, setError } = useError();
+	const [newWorkoutPlan, setNewWorkoutPlan] = useState<Workoutplan>({});
+	const [newWorkoutPlanName, setNewWorkoutPlanName] = useState('');
 
-	const workoutPlanName = useRef(null);
+	useEffect(() => {
+		workoutPlan.forEach(workout => {
+			setNewWorkoutPlan(prev => ({
+				...prev,
+				[workout.name]: `${workout.name} : ${workout.reps} reps x ${workout.sets} sets`,
+			}));
+		});
+	}, [workoutPlan]);
 
 	const removeWorkout = (
 		e: React.MouseEvent<HTMLImageElement>,
@@ -62,27 +78,74 @@ const CreateWorkoutPlan: FC<Props> = ({ workoutPlan, setWorkoutPlan }) => {
 		setWorkoutPlan(newArray);
 	};
 
-	const submitNewWorkoutPlan = (e: React.MouseEvent<HTMLButtonElement>) => {
+	const onChange = (e: any, index: number) => {
+		let clone = [...workoutPlan];
+		let obj = clone[index];
+
+		if (e.target.id === 'reps') {
+			obj.reps = e.target.value;
+			clone[index] = obj;
+			setWorkoutPlan([...clone]);
+		} else {
+			obj.sets = e.target.value;
+			clone[index] = obj;
+			setWorkoutPlan([...clone]);
+		}
+	};
+
+	const addWorkoutPlanName = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setNewWorkoutPlanName(e.target.value);
+	};
+
+	const submitNewWorkoutPlan = async (
+		e: React.MouseEvent<HTMLButtonElement>,
+	) => {
 		e.preventDefault();
+
+		try {
+			const auth = getAuth();
+			const docRef = doc(
+				db,
+				`users/${auth.currentUser!.uid}/workout-plans`,
+				`${newWorkoutPlanName}`,
+			);
+			await setDoc(docRef, newWorkoutPlan);
+			setError({ active: false, message: '' });
+		} catch (error) {
+			setError({
+				active: true,
+				message: 'Please give your workout plan a name ',
+			});
+		}
 	};
 
 	return (
 		<div css={styles.container}>
 			<div>
 				<label htmlFor=''>Name Workout Plan</label>
-				<input ref={workoutPlanName} type='text' name='' id='' />
+				<input type='text' onChange={addWorkoutPlanName} id='name' />
 			</div>
 			<div>
-				{workoutPlan.map(currentWorkout => (
+				{workoutPlan.map((currentWorkout, index) => (
 					<div>
 						{currentWorkout.name}
 						<div>
 							<label htmlFor=''>Reps</label>
-							<input type='text' />
+							<input
+								type='text'
+								id='reps'
+								value={currentWorkout.reps}
+								onChange={e => onChange(e, index)}
+							/>
 						</div>
 						<div>
 							<label htmlFor=''>Sets</label>
-							<input type='text' />
+							<input
+								type='text'
+								id='sets'
+								value={currentWorkout.sets}
+								onChange={e => onChange(e, index)}
+							/>
 						</div>
 						<img
 							src={remove}

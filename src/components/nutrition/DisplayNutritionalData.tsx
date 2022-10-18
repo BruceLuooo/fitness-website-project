@@ -1,5 +1,17 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
+import { getAuth } from 'firebase/auth';
+import {
+	addDoc,
+	collection,
+	doc,
+	FieldValue,
+	serverTimestamp,
+	setDoc,
+} from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { db } from '../../firebase.config';
+import { useError } from '../../hooks/useError';
 
 interface Data {
 	name: string;
@@ -20,11 +32,16 @@ interface Data {
 	};
 }
 
-type Props = {
-	data: Data[];
-};
+interface Props {
+	dataRecieved: Data[];
+}
 
-const DisplayNutritionalData = ({ data }: Props) => {
+interface LogData {
+	[key: string]: any;
+	loggedDate: FieldValue;
+}
+
+const DisplayNutritionalData = ({ dataRecieved }: Props) => {
 	const styles = {
 		h1: css`
 			font-size: 32px;
@@ -56,12 +73,52 @@ const DisplayNutritionalData = ({ data }: Props) => {
 	let totalFat = 0;
 	let totalSugar = 0;
 
-	data.forEach(data => {
+	dataRecieved.forEach(data => {
 		totalCalories += data.calories;
 		totalFat += data.totalNutrients.FAT.quantity;
 		totalProtein += data.totalNutrients.PROCNT.quantity;
 		totalSugar += data.totalNutrients.SUGAR.quantity;
 	});
+
+	const { error, setError } = useError();
+
+	const [addDataToLog, setAddDataToLog] = useState<LogData>({
+		loggedDate: serverTimestamp(),
+		ingredients: [],
+	});
+
+	useEffect(() => {
+		dataRecieved.map(data => {
+			setAddDataToLog(prev => ({
+				...prev,
+				ingredients: [
+					...prev.ingredients,
+					`${data.name}: ${Math.round(data.calories)} calories, ${Math.round(
+						data.totalNutrients.PROCNT.quantity,
+					)}g protein, ${Math.round(
+						data.totalNutrients.FAT.quantity,
+					)}g fat, ${Math.round(data.totalNutrients.SUGAR.quantity)}g sugar`,
+				],
+			}));
+		});
+	}, [dataRecieved]);
+
+	const addToNutritionLog = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		try {
+			const auth = getAuth();
+			const docRef = collection(
+				db,
+				`users/${auth.currentUser!.uid}/nutrition-log`,
+			);
+			await addDoc(docRef, addDataToLog);
+			setError({ active: false, message: '' });
+		} catch (error) {
+			setError({
+				active: true,
+				message: 'Please give your workout plan a name ',
+			});
+		}
+	};
 
 	return (
 		<div css={styles.displayDataContainer}>
@@ -70,21 +127,21 @@ const DisplayNutritionalData = ({ data }: Props) => {
 			<div css={styles.dataContainer}>
 				<div css={styles.dataStructure}>
 					<div>Food</div>
-					{data.map(data => (
+					{dataRecieved.map(data => (
 						<div key={data.name}>{data.name}</div>
 					))}
 					<div>Total</div>
 				</div>
 				<div css={styles.dataStructure}>
 					<div>Calories</div>
-					{data.map(data => (
+					{dataRecieved.map(data => (
 						<div key={data.calories}>{data.calories}</div>
 					))}
 					<div>{Math.round(totalCalories)}</div>
 				</div>
 				<div css={styles.dataStructure}>
 					<div>Protein</div>
-					{data.map(data => (
+					{dataRecieved.map(data => (
 						<div key={data.totalNutrients.PROCNT.quantity}>
 							{Math.round(data.totalNutrients.PROCNT.quantity)}
 							{data.totalNutrients.PROCNT.unit}
@@ -94,7 +151,7 @@ const DisplayNutritionalData = ({ data }: Props) => {
 				</div>
 				<div css={styles.dataStructure}>
 					<div>Fat</div>
-					{data.map(data => (
+					{dataRecieved.map(data => (
 						<div key={data.totalNutrients.FAT.quantity}>
 							{Math.round(data.totalNutrients.FAT.quantity)}
 							{data.totalNutrients.FAT.unit}
@@ -104,7 +161,7 @@ const DisplayNutritionalData = ({ data }: Props) => {
 				</div>
 				<div css={styles.dataStructure}>
 					<div>Sugar</div>
-					{data.map(data => (
+					{dataRecieved.map(data => (
 						<div key={data.totalNutrients.SUGAR.quantity}>
 							{Math.round(data.totalNutrients.SUGAR.quantity)}
 							{data.totalNutrients.SUGAR.unit}
@@ -112,6 +169,7 @@ const DisplayNutritionalData = ({ data }: Props) => {
 					))}
 					<div>{Math.round(totalSugar)}g</div>
 				</div>
+				<button onClick={addToNutritionLog}>Add to Nutrition Log</button>
 			</div>
 		</div>
 	);

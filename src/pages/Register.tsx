@@ -3,6 +3,9 @@ import { css } from '@emotion/react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useError } from '../hooks/useError';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { db } from '../firebase.config';
+import { setDoc, doc } from 'firebase/firestore';
 import show from '../assets/showPassword.png';
 import hide from '../assets/hidePassword.png';
 
@@ -76,7 +79,7 @@ const Register = () => {
 	interface login {
 		name: string;
 		lastname: string;
-		login: string;
+		email: string;
 		password: string;
 		confirmPassword: string;
 	}
@@ -84,7 +87,7 @@ const Register = () => {
 	const [registerInfo, setRegisterInfo] = useState<login>({
 		name: '',
 		lastname: '',
-		login: '',
+		email: '',
 		password: '',
 		confirmPassword: '',
 	});
@@ -97,7 +100,7 @@ const Register = () => {
 		}));
 	};
 
-	const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		if (registerInfo.confirmPassword !== registerInfo.password) {
@@ -106,14 +109,30 @@ const Register = () => {
 		if (
 			registerInfo.confirmPassword === '' ||
 			registerInfo.lastname === '' ||
-			registerInfo.login === '' ||
+			registerInfo.email === '' ||
 			registerInfo.name === '' ||
 			registerInfo.password === ''
 		) {
 			return setError({ active: true, message: 'Please fill in all fields' });
 		}
 
-		return navigate('/');
+		try {
+			const auth = getAuth();
+
+			const userCredential = await createUserWithEmailAndPassword(
+				auth,
+				registerInfo.email,
+				registerInfo.password,
+			);
+			const user = userCredential.user;
+			const token = await user.getIdToken();
+			localStorage.setItem('token', token);
+
+			await setDoc(doc(db, 'users', user.uid), registerInfo);
+			return navigate('/profile/overview');
+		} catch (error) {
+			return setError({ active: true, message: 'Could Not Create Account' });
+		}
 	};
 
 	return (
@@ -142,10 +161,10 @@ const Register = () => {
 				</div>
 
 				<div css={styles.input}>
-					<label htmlFor='login'>Username</label>
+					<label htmlFor='email'>Email</label>
 					<input
 						css={styles.inputBox}
-						id='login'
+						id='email'
 						type='text'
 						onChange={onChange}
 					/>

@@ -190,11 +190,11 @@ const DailyCalorieIntake = () => {
 				>
 					<img src={QuestionMark} alt='question-mark' css={styles.icon} />
 					{popup && (
-						<div css={styles.popup}>
+						<p css={styles.popup}>
 							Using the Mifflin-St Jeor Equation to predict daily energy
 							expenditure in healthy adults, calculate you're estimated daily
 							calorie intake now!
-						</div>
+						</p>
 					)}
 				</div>
 			</div>
@@ -265,6 +265,10 @@ const DailyCalorieIntake = () => {
 						<div css={styles.text}>
 							Daily Calorie Intake: {calorieIntake} Calories
 						</div>
+						<p css={styles.text}>
+							Daily Calorie to lose weight: {calorieIntake - 1000} -{' '}
+							{calorieIntake - 500} Calories
+						</p>
 						<div>
 							<button css={styles.button}>Save Results?</button>
 						</div>

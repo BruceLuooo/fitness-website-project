@@ -139,26 +139,7 @@ function SearchNutritionInfo() {
 	const [addIngredient, setAddIngredient] = useState(2);
 	const [showMenu, setShowMenu] = useState(false);
 	const [currentIndex, setCurrentIndex] = useState(0);
-	const [dataRecieved, setDataRecived] = useState<Data[]>([
-		{
-			name: '',
-			calories: 0,
-			totalNutrients: {
-				FAT: {
-					quantity: 0,
-					unit: '',
-				},
-				SUGAR: {
-					quantity: 0,
-					unit: '',
-				},
-				PROCNT: {
-					quantity: 0,
-					unit: '',
-				},
-			},
-		},
-	]);
+	const [dataRecieved, setDataRecived] = useState<Data[]>([]);
 
 	const selectOptions = [
 		{ value: '', label: '' },
@@ -220,49 +201,48 @@ function SearchNutritionInfo() {
 		setIngredients(filteredIngredients);
 	};
 
-	const onSubmit = async (e: React.SyntheticEvent) => {
+	const dataRecievedRef: Data[] = [];
+
+	const pleaseWork = (e: any) => {
+		// setPopup(true);
+		setDataRecived(dataRecievedRef);
+	};
+
+	const onSubmit = (e: React.SyntheticEvent) => {
 		e.preventDefault();
-		setDataRecived([]);
+		// setDataRecived([]);
 
 		const allInformation = ingredients.map(ingredient => {
 			return `${ingredient.quantity + ingredient.metrics} ${ingredient.name}`;
 		});
 
 		allInformation.map(async information => {
-			try {
-				const { data } = await axios.post(
-					`https://api.edamam.com/api/nutrition-details?app_id=${process.env.REACT_APP_ID}&app_key=${process.env.REACT_APP_KEY}`,
-					{
-						ingr: [information],
-					},
-				);
+			const { data } = await axios.post(
+				`https://api.edamam.com/api/nutrition-details?app_id=${process.env.REACT_APP_ID}&app_key=${process.env.REACT_APP_KEY}`,
+				{
+					ingr: [information],
+				},
+			);
 
-				return setDataRecived(prev => [
-					...prev,
-					{
-						name: information,
-						calories: data.calories,
-						totalNutrients: {
-							FAT: {
-								quantity: data.totalNutrients.FAT.quantity,
-								unit: data.totalNutrients.FAT.unit,
-							},
-							SUGAR: {
-								quantity: data.totalNutrients.SUGAR.quantity,
-								unit: data.totalNutrients.SUGAR.unit,
-							},
-							PROCNT: {
-								quantity: data.totalNutrients.PROCNT.quantity,
-								unit: data.totalNutrients.PROCNT.unit,
-							},
-						},
+			dataRecievedRef.push({
+				name: information,
+				calories: data.calories,
+				totalNutrients: {
+					FAT: {
+						quantity: data.totalNutrients.FAT.quantity,
+						unit: data.totalNutrients.FAT.unit,
 					},
-				]);
-			} catch {
-				return;
-			}
+					SUGAR: {
+						quantity: data.totalNutrients.SUGAR.quantity,
+						unit: data.totalNutrients.SUGAR.unit,
+					},
+					PROCNT: {
+						quantity: data.totalNutrients.PROCNT.quantity,
+						unit: data.totalNutrients.PROCNT.unit,
+					},
+				},
+			});
 		});
-		setPopup(true);
 	};
 
 	return (
@@ -338,8 +318,10 @@ function SearchNutritionInfo() {
 						</button>
 					</div>
 				</form>
+				<button onClick={pleaseWork}>submit</button>
 			</div>
-			{popup && <DisplayNutritionalData data={dataRecieved} />}
+			{/* {popup && <DisplayNutritionalData dataRecieved={dataRecieved} />} */}
+			<DisplayNutritionalData dataRecieved={dataRecieved} />
 		</div>
 	);
 }
