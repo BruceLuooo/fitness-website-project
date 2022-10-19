@@ -29,7 +29,16 @@ interface WorkoutData {
 
 const SearchExercises = () => {
 	const styles = {
-		container: css`
+		mainContainer: css`
+			display: flex;
+			flex-direction: column;
+			margin-top: 8rem;
+			gap: 2rem;
+		`,
+		header: css`
+			font-size: 40px;
+		`,
+		searchContainer: css`
 			display: flex;
 			gap: 1rem;
 			background-color: aliceblue;
@@ -193,70 +202,73 @@ const SearchExercises = () => {
 	};
 
 	return (
-		<div css={styles.container}>
-			<form css={styles.formContainer} onSubmit={onSubmit}>
-				<div>
-					<label htmlFor='search'>Search (Optional)</label>
-					<input id='search' type='text' onChange={onChange} />
-				</div>
-				<div>
-					<label htmlFor='type'>Type of training (Optional)</label>
+		<div css={styles.mainContainer}>
+			<h1 css={styles.header}>Create A Workout Plan</h1>
+			<div css={styles.searchContainer}>
+				<form css={styles.formContainer} onSubmit={onSubmit}>
 					<div>
-						<div css={styles.dropdownInput} onClick={e => onClick(e, 1)}>
-							<div>
-								{searchQuery.activity.label === ''
-									? ''
-									: `${searchQuery.activity.label}`}
-							</div>
-							<img src={DownArrow} alt='' css={styles.icon} />
-						</div>
-						{openMenu === 1 && (
-							<DropdownMenu
-								selectOptions={typeOfExercises}
-								onSelectedOption={onSelectedOption}
-							/>
-						)}
+						<label htmlFor='search'>Search (Optional)</label>
+						<input id='search' type='text' onChange={onChange} />
 					</div>
-				</div>
-				<div>
-					<label htmlFor='muscleGroup'>MuscleGroup (Optional)</label>
 					<div>
-						<div css={styles.dropdownInput} onClick={e => onClick(e, 2)}>
-							<div>
-								{searchQuery.muscleGroup === ''
-									? ''
-									: `${searchQuery.muscleGroup}`}
+						<label htmlFor='type'>Type of training (Optional)</label>
+						<div>
+							<div css={styles.dropdownInput} onClick={e => onClick(e, 1)}>
+								<div>
+									{searchQuery.activity.label === ''
+										? ''
+										: `${searchQuery.activity.label}`}
+								</div>
+								<img src={DownArrow} alt='' css={styles.icon} />
 							</div>
-							<img src={DownArrow} alt='' css={styles.icon} />
+							{openMenu === 1 && (
+								<DropdownMenu
+									selectOptions={typeOfExercises}
+									onSelectedOption={onSelectedOption}
+								/>
+							)}
 						</div>
-						{openMenu === 2 && (
-							<DropdownMenu
-								selectOptions={muscleGroup}
-								onSelectedOption={onSelectedOption}
-							/>
-						)}
 					</div>
+					<div>
+						<label htmlFor='muscleGroup'>MuscleGroup (Optional)</label>
+						<div>
+							<div css={styles.dropdownInput} onClick={e => onClick(e, 2)}>
+								<div>
+									{searchQuery.muscleGroup === ''
+										? ''
+										: `${searchQuery.muscleGroup}`}
+								</div>
+								<img src={DownArrow} alt='' css={styles.icon} />
+							</div>
+							{openMenu === 2 && (
+								<DropdownMenu
+									selectOptions={muscleGroup}
+									onSelectedOption={onSelectedOption}
+								/>
+							)}
+						</div>
+					</div>
+					{error && <div>{error.message}</div>}
+					<button type='submit'>Find</button>
+				</form>
+				<div css={styles.resultsContainer}>
+					{data.map((data, index) => (
+						<div key={data.name} css={styles.results}>
+							<button onClick={e => addToWorkoutPlan(e, data, index)}>
+								Add to plan
+							</button>
+							<div>{data.name}</div>
+							<div>{data.type}</div>
+							<div>{data.equipment}</div>
+							<div>{data.instructions}</div>
+						</div>
+					))}
 				</div>
-				{error && <div>{error.message}</div>}
-				<button type='submit'>Find</button>
-			</form>
-			<div css={styles.resultsContainer}>
-				{data.map((data, index) => (
-					<div key={data.name} css={styles.results}>
-						<button onClick={e => addToWorkoutPlan(e, data, index)}>
-							Add to plan
-						</button>
-						<div>{data.name}</div>
-						<div>{data.type}</div>
-						<div>{data.equipment}</div>
-						<div>{data.instructions}</div>
-					</div>
-				))}
+				<CreateWorkoutPlan
+					workoutPlan={workoutPlan}
+					setWorkoutPlan={setWorkoutPlan}
+				/>
 			</div>
-			<CreateWorkoutPlan
-				workoutPlan={workoutPlan}
-				setWorkoutPlan={setWorkoutPlan}
-			/>
 		</div>
 	);
 };

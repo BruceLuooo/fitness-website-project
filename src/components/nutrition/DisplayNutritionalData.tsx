@@ -85,6 +85,7 @@ const DisplayNutritionalData = ({ dataRecieved }: Props) => {
 	const [addDataToLog, setAddDataToLog] = useState<LogData>({
 		loggedDate: serverTimestamp(),
 		ingredients: [],
+		calories: [],
 	});
 
 	useEffect(() => {
@@ -99,6 +100,7 @@ const DisplayNutritionalData = ({ dataRecieved }: Props) => {
 						data.totalNutrients.FAT.quantity,
 					)}g fat, ${Math.round(data.totalNutrients.SUGAR.quantity)}g sugar`,
 				],
+				calories: [...prev.calories, Math.round(data.calories)],
 			}));
 		});
 	}, [dataRecieved]);

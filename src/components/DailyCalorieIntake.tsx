@@ -1,13 +1,28 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import { useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
+import { doc, updateDoc } from 'firebase/firestore';
 import QuestionMark from '../assets/svg/questionMark.svg';
 import DownArrow from '../assets/svg/downArrow.svg';
 import { useError } from '../hooks/useError';
 import { usePopup } from '../hooks/usePopup';
 import DropdownMenu from './DropdownMenu';
+import { db } from '../firebase.config';
+import { getAuth } from 'firebase/auth';
 
-const DailyCalorieIntake = () => {
+interface Data {
+	age: number;
+	gender: string;
+	height: number;
+	weight: number;
+	activity: { label: string; value: number };
+}
+
+interface Props {
+	setCalorieTarget: Function;
+}
+
+const DailyCalorieIntake: FC<Props> = ({ setCalorieTarget }) => {
 	const styles = {
 		container: css`
 			display: flex;
@@ -18,7 +33,7 @@ const DailyCalorieIntake = () => {
 			padding: 1.5rem;
 		`,
 		text: css`
-			font-size: 20px;
+			font-size: 16px;
 		`,
 		formContainer: css`
 			display: flex;
@@ -91,14 +106,6 @@ const DailyCalorieIntake = () => {
 			z-index: 10;
 		`,
 	};
-
-	interface Data {
-		age: number;
-		gender: string;
-		height: number;
-		weight: number;
-		activity: { label: string; value: number };
-	}
 
 	const { error, setError } = useError();
 	const { popup, setPopup } = usePopup();
@@ -177,6 +184,20 @@ const DailyCalorieIntake = () => {
 				return setCalorieIntake(dailyCalorieForFemale);
 			}
 		}
+	};
+
+	const updateMonthlyCalorieIntake = async (
+		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+		totalCalories: number,
+	) => {
+		const auth = getAuth();
+
+		const docRef = doc(db, `users/${auth.currentUser!.uid}`);
+		await updateDoc(docRef, {
+			caloriesPerDay: totalCalories,
+		});
+
+		setCalorieTarget(totalCalories);
 	};
 
 	return (
@@ -262,16 +283,19 @@ const DailyCalorieIntake = () => {
 			<div>
 				{calorieIntake > 0 && (
 					<div>
-						<div css={styles.text}>
-							Daily Calorie Intake: {calorieIntake} Calories
-						</div>
-						<p css={styles.text}>
-							Daily Calorie to lose weight: {calorieIntake - 1000} -{' '}
+						<button
+							css={styles.text}
+							onClick={e => updateMonthlyCalorieIntake(e, calorieIntake)}
+						>
+							Maintain weight: {calorieIntake} Calories
+						</button>
+						<button
+							css={styles.text}
+							onClick={e => updateMonthlyCalorieIntake(e, calorieIntake - 500)}
+						>
+							Lose weight (~ 1lbs/week):
 							{calorieIntake - 500} Calories
-						</p>
-						<div>
-							<button css={styles.button}>Save Results?</button>
-						</div>
+						</button>
 					</div>
 				)}
 			</div>
