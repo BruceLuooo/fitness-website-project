@@ -9,27 +9,46 @@ import { setDoc, doc } from 'firebase/firestore';
 import show from '../assets/showPassword.png';
 import hide from '../assets/hidePassword.png';
 
+interface login {
+	name: string;
+	lastname: string;
+	email: string;
+	password: string;
+	confirmPassword: string;
+	workoutsPerMonth: number;
+	caloriesPerDay: number;
+}
+
 const Register = () => {
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
 		container: css`
 			display: flex;
 			flex-direction: column;
-			max-width: 40%;
+			width: 30rem;
 			margin: auto;
 			margin-top: 10rem;
 			padding: 5rem;
 			gap: 2rem;
 			border: 1px solid lightgray;
 			border-radius: 4px;
+			${mq2} {
+				padding: 5rem 1rem;
+				width: 23rem;
+			}
 		`,
 		logoFont: css`
 			color: black;
-			font-size: 30px;
+			font-size: 40px;
 		`,
 		formContainer: css`
 			display: flex;
 			flex-direction: column;
 			gap: 1.5rem;
+		`,
+		label: css`
+			font-size: 18px;
 		`,
 		input: css`
 			position: relative;
@@ -45,27 +64,29 @@ const Register = () => {
 			border: 1px solid lightgray;
 			padding: 1.2rem 0.5rem;
 			border-radius: 3px;
-			font-size: 16px;
+			font-size: 18px;
 		`,
 		invalidLogin: css`
 			color: #dc0909;
+			font-size: 18px;
 		`,
 		button: css`
-			font-size: 16px;
-			padding: 0.5rem 1rem;
-			background-color: white;
-			border: 1px solid lightgray;
-			border-radius: 4px;
-			transition: 0.2s;
+			background-color: #7caafa;
+			border: 1px solid #ccc;
+			width: 7rem;
+			height: 2.5rem;
+			font-size: 18px;
+			border-radius: 5px;
+			transition: 0.3s;
 			&:hover {
 				cursor: pointer;
-				background-color: #cecece;
+				background-color: #4f8efb;
 			}
 		`,
 		showPassword: css`
 			position: absolute;
 			right: 1rem;
-			top: 2rem;
+			top: 2.2rem;
 		`,
 		fullName: css`
 			display: grid;
@@ -76,20 +97,14 @@ const Register = () => {
 	const { error, setError } = useError();
 	const navigate = useNavigate();
 
-	interface login {
-		name: string;
-		lastname: string;
-		email: string;
-		password: string;
-		confirmPassword: string;
-	}
-
 	const [registerInfo, setRegisterInfo] = useState<login>({
 		name: '',
 		lastname: '',
 		email: '',
 		password: '',
 		confirmPassword: '',
+		workoutsPerMonth: 0,
+		caloriesPerDay: 0,
 	});
 	const [showPassword, setShowPassword] = useState(false);
 
@@ -141,7 +156,9 @@ const Register = () => {
 			<form css={styles.formContainer} onSubmit={onSubmit}>
 				<div css={styles.fullName}>
 					<div css={styles.input}>
-						<label htmlFor='name'>Name</label>
+						<label css={styles.label} htmlFor='name'>
+							Name
+						</label>
 						<input
 							css={styles.inputBox}
 							id='name'
@@ -150,7 +167,9 @@ const Register = () => {
 						/>
 					</div>
 					<div css={styles.input}>
-						<label htmlFor='lastname'>Last name</label>
+						<label css={styles.label} htmlFor='lastname'>
+							Last name
+						</label>
 						<input
 							css={styles.inputBox}
 							id='lastname'
@@ -161,7 +180,9 @@ const Register = () => {
 				</div>
 
 				<div css={styles.input}>
-					<label htmlFor='email'>Email</label>
+					<label css={styles.label} htmlFor='email'>
+						Email
+					</label>
 					<input
 						css={styles.inputBox}
 						id='email'
@@ -171,7 +192,9 @@ const Register = () => {
 				</div>
 				<div css={styles.fullName}>
 					<div css={styles.input}>
-						<label htmlFor='name'>Password</label>
+						<label css={styles.label} htmlFor='name'>
+							Password
+						</label>
 						<input
 							css={styles.inputBox}
 							id='password'
@@ -186,7 +209,9 @@ const Register = () => {
 						/>
 					</div>
 					<div css={styles.input}>
-						<label htmlFor='confirmPassword'>Confirm Password</label>
+						<label css={styles.label} htmlFor='confirmPassword'>
+							Confirm Password
+						</label>
 						<input
 							css={styles.inputBox}
 							id='confirmPassword'

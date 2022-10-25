@@ -98,22 +98,6 @@ const ProfileSideBar = ({ currentState }: props) => {
 					Fitness
 				</button>
 			</div>
-			<div
-				css={
-					selected === 'personal-info'
-						? [styles.sidebarDirectory, styles.sidebarDirectorySelected]
-						: styles.sidebarDirectory
-				}
-			>
-				<button
-					css={styles.button}
-					id='overview'
-					value='personal-info'
-					onClick={handleClick}
-				>
-					Personal Info
-				</button>
-			</div>
 		</div>
 	);
 };

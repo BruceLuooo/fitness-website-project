@@ -6,6 +6,9 @@ import axios from 'axios';
 import DropdownMenu from '../DropdownMenu';
 import DownArrow from '../../assets/svg/downArrow.svg';
 import CreateWorkoutPlan from './CreateWorkoutPlan';
+import Strength from '../../assets/svg/strength.svg';
+import Cardio from '../../assets/svg/cardio.svg';
+import FormCompleted from '../FormCompleted';
 
 interface SearchQuery {
 	search: string;
@@ -28,33 +31,98 @@ interface WorkoutData {
 }
 
 const SearchExercises = () => {
+	const mq1 = `@media screen and (max-width: 1283px)`;
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
+		red: css`
+			color: red;
+		`,
 		mainContainer: css`
 			display: flex;
 			flex-direction: column;
 			margin-top: 8rem;
+			padding: 2rem;
 			gap: 2rem;
-		`,
-		header: css`
-			font-size: 40px;
+			background-color: whitesmoke;
+			min-width: 75rem;
+			${mq1} {
+				min-width: 45rem;
+				align-items: center;
+			}
+			${mq2} {
+				min-width: 320px;
+				align-items: unset;
+			}
 		`,
 		searchContainer: css`
 			display: flex;
-			gap: 1rem;
-			background-color: aliceblue;
-			padding: 1.5rem;
-			gap: 4rem;
+			justify-content: space-around;
+			gap: 2rem;
+			${mq1} {
+				flex-direction: column;
+			}
+		`,
+		header: css`
+			font-size: 50px;
+			${mq1} {
+				font-size: 50px;
+			}
+			${mq2} {
+				font-size: 36px;
+			}
+		`,
+		h2: css`
+			font-size: 18px;
+			${mq2} {
+				font-size: 16px;
+			}
+		`,
+		label: css`
+			font-size: 18px;
+			${mq1} {
+				font-size: 16px;
+			}
+		`,
+		searchQuery: css`
+			display: flex;
+			flex-direction: column;
+			gap: 0.3rem;
+			margin: 0.7rem 0;
+			${mq1} {
+				min-width: 4rem;
+			}
+		`,
+		searchInput: css`
+			height: 1.8rem;
+			font-size: 18px;
+			padding: 16px 6px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			${mq2} {
+				font-size: 16px;
+			}
 		`,
 		dropdownInput: css`
+			display: flex;
+			align-items: center;
+			font-size: 16px;
+			height: 1.4rem;
+		`,
+		dropdownMenu: css`
 			padding: 5px;
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
 			user-select: none;
 			border: 1px solid #ccc;
+			background-color: white;
 			border-radius: 5px;
 			text-align: left;
-			width: 100%;
+			min-width: 10rem;
+			${mq2} {
+				min-width: 1rem;
+			}
 		`,
 		icon: css`
 			width: 15px;
@@ -63,40 +131,129 @@ const SearchExercises = () => {
 			display: flex;
 			flex-direction: column;
 			gap: 1rem;
+			min-width: 20rem;
+			${mq1} {
+				min-width: 10rem;
+			}
+			${mq2} {
+				/* min-width: 5rem; */
+			}
+		`,
+		search: css`
+			display: flex;
+			flex-direction: column;
+			gap: 1.5rem;
+			${mq1} {
+				flex-direction: row;
+				align-items: center;
+				gap: 1rem;
+			}
+			${mq2} {
+				flex-direction: column;
+				align-items: unset;
+			}
+		`,
+		findExerciseButton: css`
+			height: 2rem;
+			background-color: #7caafa;
+			border: 1px solid #ccc;
+			width: 10rem;
+			height: 3rem;
+			font-size: 18px;
+			border-radius: 5px;
+			transition: 0.3s;
+			&:hover {
+				cursor: pointer;
+				background-color: #4f8efb;
+			}
+			${mq1} {
+				font-size: 16px;
+				width: 8rem;
+				height: 2.5rem;
+			}
+		`,
+		findExercise: css`
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		`,
+		addToPlanButton: css`
+			max-width: 8rem;
+			${mq2} {
+				max-width: 6rem;
+			}
 		`,
 		resultsContainer: css`
+			width: 28rem;
 			max-height: 30rem;
 			overflow-y: auto;
+			${mq1} {
+				min-width: 34rem;
+			}
+			${mq2} {
+				min-width: 14rem;
+				width: unset;
+			}
 		`,
 		results: css`
 			display: flex;
-			flex-direction: column;
-			max-width: 30rem;
+			justify-content: space-between;
+			align-items: center;
+			padding: 1rem;
+			margin: 1rem 0;
+			background-color: white;
 			border: 1px solid black;
+			border-radius: 5px;
+			min-width: 2rem;
+			gap: 1rem;
+		`,
+		displayDataSpace: css`
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		`,
+		resultFound: css`
+			display: flex;
+			align-items: center;
+			max-width: 10rem;
+			gap: 0.5rem;
+		`,
+		popupContainer: css`
+			position: relative;
+		`,
+		popup: css`
+			position: absolute;
+			padding: 1rem;
+			width: 20rem;
+			background-color: white;
+			font-size: 16px;
+			letter-spacing: 1px;
+			line-height: 1.2rem;
+			z-index: 10;
 		`,
 	};
 
 	const { error, setError } = useError();
 
 	const typeOfExercises = [
-		{ label: 'cardio' },
-		{ label: 'plyometrics' },
-		{ label: 'powerlifting' },
-		{ label: 'strength' },
+		{ label: 'Cardio' },
+		{ label: 'Plyometrics' },
+		{ label: 'Powerlifting' },
+		{ label: 'Strength' },
 	];
 	const muscleGroup = [
-		{ label: 'abdominals' },
-		{ label: 'abductors' },
-		{ label: 'biceps' },
-		{ label: 'calves' },
-		{ label: 'chest' },
-		{ label: 'glutes' },
-		{ label: 'hamstrings' },
-		{ label: 'lats' },
-		{ label: 'lower_back' },
-		{ label: 'middle_back' },
-		{ label: 'traps' },
-		{ label: 'triceps' },
+		{ label: 'Abdominals' },
+		{ label: 'Abductors' },
+		{ label: 'Biceps' },
+		{ label: 'Calves' },
+		{ label: 'Chest' },
+		{ label: 'Glutes' },
+		{ label: 'Hamstrings' },
+		{ label: 'Lats' },
+		{ label: 'Lower_back' },
+		{ label: 'Middle_back' },
+		{ label: 'Traps' },
+		{ label: 'Triceps' },
 	];
 
 	useEffect(() => {
@@ -115,6 +272,7 @@ const SearchExercises = () => {
 	const [openMenu, setOpenMenu] = useState(0);
 	const [data, setData] = useState<Data[]>([]);
 	const [workoutPlan, setWorkoutPlan] = useState<WorkoutData[]>([]);
+	const [successfulPopup, setSucessfulPopup] = useState(false);
 
 	const onClick = (e: React.MouseEvent<HTMLDivElement>, number: number) => {
 		e.stopPropagation();
@@ -206,68 +364,105 @@ const SearchExercises = () => {
 			<h1 css={styles.header}>Create A Workout Plan</h1>
 			<div css={styles.searchContainer}>
 				<form css={styles.formContainer} onSubmit={onSubmit}>
-					<div>
-						<label htmlFor='search'>Search (Optional)</label>
-						<input id='search' type='text' onChange={onChange} />
-					</div>
-					<div>
-						<label htmlFor='type'>Type of training (Optional)</label>
-						<div>
-							<div css={styles.dropdownInput} onClick={e => onClick(e, 1)}>
-								<div>
-									{searchQuery.activity.label === ''
-										? ''
-										: `${searchQuery.activity.label}`}
-								</div>
-								<img src={DownArrow} alt='' css={styles.icon} />
+					<div css={styles.search}>
+						<div css={styles.searchQuery}>
+							<div>
+								<label css={styles.label} htmlFor='search'>
+									Search (Optional)
+								</label>
 							</div>
-							{openMenu === 1 && (
-								<DropdownMenu
-									selectOptions={typeOfExercises}
-									onSelectedOption={onSelectedOption}
-								/>
-							)}
+							<input
+								css={styles.searchInput}
+								id='search'
+								type='text'
+								onChange={onChange}
+							/>
+						</div>
+						<div css={styles.searchQuery}>
+							<label css={styles.label} htmlFor='type'>
+								Type of training (Optional)
+							</label>
+							<div>
+								<div css={styles.dropdownMenu} onClick={e => onClick(e, 1)}>
+									<div css={styles.dropdownInput}>
+										{searchQuery.activity.label === ''
+											? ''
+											: `${searchQuery.activity.label}`}
+									</div>
+									<img src={DownArrow} alt='' css={styles.icon} />
+								</div>
+								{openMenu === 1 && (
+									<DropdownMenu
+										selectOptions={typeOfExercises}
+										onSelectedOption={onSelectedOption}
+									/>
+								)}
+							</div>
+						</div>
+						<div css={styles.searchQuery}>
+							<label css={styles.label} htmlFor='muscleGroup'>
+								MuscleGroup (Optional)
+							</label>
+							<div>
+								<div css={styles.dropdownMenu} onClick={e => onClick(e, 2)}>
+									<div css={styles.dropdownInput}>
+										{searchQuery.muscleGroup === ''
+											? ''
+											: `${searchQuery.muscleGroup}`}
+									</div>
+									<img src={DownArrow} alt='' css={styles.icon} />
+								</div>
+								{openMenu === 2 && (
+									<DropdownMenu
+										selectOptions={muscleGroup}
+										onSelectedOption={onSelectedOption}
+									/>
+								)}
+							</div>
 						</div>
 					</div>
-					<div>
-						<label htmlFor='muscleGroup'>MuscleGroup (Optional)</label>
-						<div>
-							<div css={styles.dropdownInput} onClick={e => onClick(e, 2)}>
-								<div>
-									{searchQuery.muscleGroup === ''
-										? ''
-										: `${searchQuery.muscleGroup}`}
-								</div>
-								<img src={DownArrow} alt='' css={styles.icon} />
-							</div>
-							{openMenu === 2 && (
-								<DropdownMenu
-									selectOptions={muscleGroup}
-									onSelectedOption={onSelectedOption}
-								/>
-							)}
-						</div>
+					<div css={styles.findExercise}>
+						{error && <div css={(styles.h2, styles.red)}>{error.message}</div>}
+						<button css={styles.findExerciseButton} type='submit'>
+							Find Workouts
+						</button>
 					</div>
-					{error && <div>{error.message}</div>}
-					<button type='submit'>Find</button>
 				</form>
 				<div css={styles.resultsContainer}>
 					{data.map((data, index) => (
 						<div key={data.name} css={styles.results}>
-							<button onClick={e => addToWorkoutPlan(e, data, index)}>
+							<div css={styles.displayDataSpace}>
+								<div css={styles.resultFound}>
+									<h1 css={styles.h2}>{data.name}</h1>
+								</div>
+								<div css={styles.resultFound}>
+									<img
+										css={styles.icon}
+										src={data.type === 'cardio' ? Cardio : Strength}
+										alt=''
+									/>
+									<div>{data.type}</div>
+								</div>
+							</div>
+
+							<button
+								css={[styles.findExerciseButton, styles.addToPlanButton]}
+								onClick={e => addToWorkoutPlan(e, data, index)}
+							>
 								Add to plan
 							</button>
-							<div>{data.name}</div>
-							<div>{data.type}</div>
-							<div>{data.equipment}</div>
-							<div>{data.instructions}</div>
 						</div>
 					))}
 				</div>
-				<CreateWorkoutPlan
-					workoutPlan={workoutPlan}
-					setWorkoutPlan={setWorkoutPlan}
-				/>
+				{!successfulPopup ? (
+					<CreateWorkoutPlan
+						workoutPlan={workoutPlan}
+						setWorkoutPlan={setWorkoutPlan}
+						setSucessfulPopup={setSucessfulPopup}
+					/>
+				) : (
+					<FormCompleted setSucessfulPopup={setSucessfulPopup} text='Workout' />
+				)}
 			</div>
 		</div>
 	);

@@ -19,9 +19,6 @@ const PersonalInfo = () => {
 		container: css`
 			display: flex;
 			flex-direction: column;
-			max-width: 40%;
-			margin: auto;
-			margin-top: 10rem;
 			padding: 5rem;
 			gap: 2rem;
 			border: 1px solid lightgray;
@@ -84,6 +81,8 @@ const PersonalInfo = () => {
 		lastname: '',
 		email: '',
 		password: '',
+		workoutsPerMonth: 0,
+		caloriesPerDay: 0,
 	});
 	const [oldUserInfo, setOldUserInfo] = useState<DocumentData>({
 		email: '',
@@ -105,6 +104,8 @@ const PersonalInfo = () => {
 					lastname: data.lastname,
 					email: data.email,
 					password: data.password,
+					workoutsPerMonth: data.workoutsPerMonth,
+					caloriesPerDay: data.caloriesPerDay,
 				});
 
 				setOldUserInfo({ email: data.email, password: data.password });
@@ -160,7 +161,6 @@ const PersonalInfo = () => {
 
 	return (
 		<div>
-			<ProfileSideBar currentState='personal-info' />
 			<div css={styles.container}>
 				<div css={styles.logoFont}>My Profile</div>
 				<form css={styles.formContainer} onSubmit={onSubmit}>

@@ -1,8 +1,8 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import { FC, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
-import QuestionMark from '../assets/svg/questionMark.svg';
+import QuestionMark from '../assets/questionMark.png';
 import DownArrow from '../assets/svg/downArrow.svg';
 import { useError } from '../hooks/useError';
 import { usePopup } from '../hooks/usePopup';
@@ -18,26 +18,51 @@ interface Data {
 	activity: { label: string; value: number };
 }
 
-interface Props {
-	setCalorieTarget: Function;
-}
+const DailyCalorieIntake = () => {
+	const mq1 = `@media screen and (max-width: 1283px)`;
+	const mq2 = `@media screen and (max-width: 768px)`;
 
-const DailyCalorieIntake: FC<Props> = ({ setCalorieTarget }) => {
 	const styles = {
 		container: css`
 			display: flex;
 			flex-direction: column;
-			gap: 1rem;
-			background-color: aliceblue;
-			width: 25rem;
-			padding: 1.5rem;
+			gap: 2.5rem;
+			background-color: whitesmoke;
+			padding: 1.5rem 10rem;
+			${mq1} {
+				padding: 1.5rem 5rem;
+			}
+			${mq1} {
+				padding: 1.5rem 2rem;
+			}
 		`,
-		text: css`
-			font-size: 16px;
+		header: css`
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 20rem;
+			gap: 1rem;
+		`,
+		title: css`
+			font-size: 32px;
+			${mq1} {
+				font-size: 26px;
+			}
+			${mq2} {
+				font-size: 20px;
+			}
+		`,
+		label: css`
+			font-size: 20px;
+			${mq2} {
+				font-size: 16px;
+			}
 		`,
 		formContainer: css`
 			display: flex;
 			flex-direction: column;
+			min-width: 20rem;
+			width: 50%;
 			gap: 1rem;
 		`,
 		formInput: css`
@@ -79,11 +104,21 @@ const DailyCalorieIntake: FC<Props> = ({ setCalorieTarget }) => {
 			}
 		`,
 		icon: css`
-			width: 15px;
+			width: 16px;
 		`,
 		button: css`
-			width: 50%;
-			padding: 0.5rem 1rem;
+			height: 2rem;
+			background-color: #7caafa;
+			border: 1px solid #ccc;
+			width: 8rem;
+			height: 3rem;
+			font-size: 16px;
+			border-radius: 5px;
+			transition: 0.3s;
+			&:hover {
+				cursor: pointer;
+				background-color: #4f8efb;
+			}
 		`,
 		radiobutton: css`
 			display: flex;
@@ -97,13 +132,58 @@ const DailyCalorieIntake: FC<Props> = ({ setCalorieTarget }) => {
 		`,
 		popup: css`
 			position: absolute;
+			left: 1rem;
 			padding: 1rem;
 			width: 20rem;
-			background-color: whitesmoke;
+			background-color: white;
 			font-size: 16px;
 			letter-spacing: 1px;
 			line-height: 1.2rem;
 			z-index: 10;
+			${mq2} {
+				left: -20rem;
+			}
+		`,
+		formAndResultsContainer: css`
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 4rem;
+			${mq2} {
+				flex-direction: column;
+				align-items: unset;
+				gap: 2rem;
+			}
+		`,
+
+		updateDailyCalorieIntake: css`
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 1rem;
+			${mq2} {
+				flex-direction: row;
+			}
+		`,
+		updateCalorieMessage: css`
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 20px;
+		`,
+		results: css`
+			width: 20rem;
+			height: 6rem;
+			font-size: 18px;
+			${mq1} {
+				width: 15rem;
+			}
+			${mq2} {
+				height: 6rem;
+				font-size: 14px;
+				letter-spacing: 1.2px;
+				word-spacing: 1px;
+			}
 		`,
 	};
 
@@ -134,6 +214,10 @@ const DailyCalorieIntake: FC<Props> = ({ setCalorieTarget }) => {
 	});
 	const [calorieIntake, setCalorieIntake] = useState(0);
 	const [openMenu, setOpenMenu] = useState(false);
+	const [updateCalories, setUpdateCalories] = useState({
+		active: false,
+		message: '',
+	});
 
 	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setData(prev => ({
@@ -178,9 +262,11 @@ const DailyCalorieIntake: FC<Props> = ({ setCalorieTarget }) => {
 			);
 			if (data.gender === 'male') {
 				setError({ active: false, message: '' });
+				setUpdateCalories({ active: false, message: '' });
 				return setCalorieIntake(dailyCalorieForMale);
 			} else {
 				setError({ active: false, message: '' });
+				setUpdateCalories({ active: false, message: '' });
 				return setCalorieIntake(dailyCalorieForFemale);
 			}
 		}
@@ -190,20 +276,29 @@ const DailyCalorieIntake: FC<Props> = ({ setCalorieTarget }) => {
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
 		totalCalories: number,
 	) => {
-		const auth = getAuth();
+		try {
+			const auth = getAuth();
 
-		const docRef = doc(db, `users/${auth.currentUser!.uid}`);
-		await updateDoc(docRef, {
-			caloriesPerDay: totalCalories,
-		});
-
-		setCalorieTarget(totalCalories);
+			const docRef = doc(db, `users/${auth.currentUser!.uid}`);
+			await updateDoc(docRef, {
+				caloriesPerDay: totalCalories,
+			});
+			setUpdateCalories({
+				active: true,
+				message: 'Daily Calorie Intake Target Updated ',
+			});
+		} catch (error) {
+			setUpdateCalories({
+				active: true,
+				message: 'Log In To Save This Information',
+			});
+		}
 	};
 
 	return (
 		<div css={styles.container}>
-			<div css={styles.formInput}>
-				<div css={styles.text}>Calculate Your Daily Calorie Intake</div>
+			<div css={styles.header}>
+				<div css={styles.title}>Calculate Your Daily Calorie Intake</div>
 				<div
 					css={styles.popupContainer}
 					onMouseOverCapture={() => setPopup(true)}
@@ -219,84 +314,103 @@ const DailyCalorieIntake: FC<Props> = ({ setCalorieTarget }) => {
 					)}
 				</div>
 			</div>
-			<form css={styles.formContainer} onSubmit={onSubmit}>
-				<div css={styles.formInput}>
-					<label htmlFor='age'>Age </label>
-					<input id='age' type='number' required onChange={onChange} />
-				</div>
-				<div css={styles.formInput}>
-					<label htmlFor='Gender'>Gender</label>
-					<div css={styles.radiobutton}>
-						<div>
-							<input
-								type='radio'
-								id='gender'
-								value='male'
-								checked={data.gender === 'male' && true}
-								onChange={onChange}
-							/>
-							<label htmlFor='male'>Male</label>
-						</div>
-						<div>
-							<input
-								type='radio'
-								id='gender'
-								value='female'
-								checked={data.gender === 'female' && true}
-								onChange={onChange}
-							/>
-							<label htmlFor='female'>Female</label>
-						</div>
+			<div css={styles.formAndResultsContainer}>
+				<form css={styles.formContainer} onSubmit={onSubmit}>
+					<div css={styles.formInput}>
+						<label css={styles.label} htmlFor='age'>
+							Age{' '}
+						</label>
+						<input id='age' type='number' required onChange={onChange} />
 					</div>
-				</div>
-				<div css={styles.formInput}>
-					<label htmlFor='height'>Height (cm)</label>
-					<input id='height' type='number' required onChange={onChange} />
-				</div>
-				<div css={styles.formInput}>
-					<label htmlFor='weight'>Weight (kg)</label>
-					<input id='weight' type='number' required onChange={onChange} />
-				</div>
-				<div css={styles.formInput}>
-					<label htmlFor='activity'>Activity</label>
-
-					<div css={styles.dropdownContainer}>
-						<div css={styles.dropdownInput} onClick={onClick}>
+					<div css={styles.formInput}>
+						<label css={styles.label} htmlFor='Gender'>
+							Gender
+						</label>
+						<div css={styles.radiobutton}>
 							<div>
-								{data.activity.label === '' ? '' : `${data.activity.label}`}
+								<input
+									type='radio'
+									id='gender'
+									value='male'
+									checked={data.gender === 'male' && true}
+									onChange={onChange}
+								/>
+								<label htmlFor='male'>Male</label>
 							</div>
-							<img src={DownArrow} alt='' css={styles.icon} />
+							<div>
+								<input
+									type='radio'
+									id='gender'
+									value='female'
+									checked={data.gender === 'female' && true}
+									onChange={onChange}
+								/>
+								<label htmlFor='female'>Female</label>
+							</div>
 						</div>
-						{openMenu === true && (
-							<DropdownMenu
-								selectOptions={selectOptions}
-								onSelectedOption={onSelectedOption}
-							/>
-						)}
 					</div>
-				</div>
-				<div css={styles.error}>{error && <div>{error.message}</div>}</div>
-				<button css={styles.button} type='submit'>
-					Calculate
-				</button>
-			</form>
-			<div>
-				{calorieIntake > 0 && (
-					<div>
+					<div css={styles.formInput}>
+						<label css={styles.label} htmlFor='height'>
+							Height (cm)
+						</label>
+						<input id='height' type='number' required onChange={onChange} />
+					</div>
+					<div css={styles.formInput}>
+						<label css={styles.label} htmlFor='weight'>
+							Weight (kg)
+						</label>
+						<input id='weight' type='number' required onChange={onChange} />
+					</div>
+					<div css={styles.formInput}>
+						<label css={styles.label} htmlFor='activity'>
+							Activity
+						</label>
+
+						<div css={styles.dropdownContainer}>
+							<div css={styles.dropdownInput} onClick={onClick}>
+								<div>
+									{data.activity.label === '' ? '' : `${data.activity.label}`}
+								</div>
+								<img src={DownArrow} alt='' css={styles.icon} />
+							</div>
+							{openMenu === true && (
+								<DropdownMenu
+									selectOptions={selectOptions}
+									onSelectedOption={onSelectedOption}
+								/>
+							)}
+						</div>
+					</div>
+					<div css={styles.error}>{error && <div>{error.message}</div>}</div>
+					<button css={styles.button} type='submit'>
+						Calculate
+					</button>
+				</form>
+				{calorieIntake > 0 && updateCalories.active === false && (
+					<div css={styles.updateDailyCalorieIntake}>
+						<p css={styles.label}>Set Daily Calorie Intake Target</p>
 						<button
-							css={styles.text}
+							css={[styles.button, styles.results]}
+							onClick={e => updateMonthlyCalorieIntake(e, calorieIntake + 500)}
+						>
+							Gain weight (~ 1lbs/week): {calorieIntake + 500} Calories
+						</button>
+						<button
+							css={[styles.button, styles.results]}
 							onClick={e => updateMonthlyCalorieIntake(e, calorieIntake)}
 						>
 							Maintain weight: {calorieIntake} Calories
 						</button>
 						<button
-							css={styles.text}
+							css={[styles.button, styles.results]}
 							onClick={e => updateMonthlyCalorieIntake(e, calorieIntake - 500)}
 						>
-							Lose weight (~ 1lbs/week):
-							{calorieIntake - 500} Calories
+							Lose weight (~ 1lbs/week): {calorieIntake - 500} Calories
 						</button>
 					</div>
+				)}
+				{updateCalories.active === true && (
+					<div css={styles.updateCalorieMessage}>{updateCalories.message}</div>
 				)}
 			</div>
 		</div>

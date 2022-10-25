@@ -13,26 +13,35 @@ interface login {
 }
 
 const Login = () => {
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
 		container: css`
 			display: flex;
 			flex-direction: column;
-			max-width: 40%;
+			width: 30rem;
 			margin: auto;
 			margin-top: 10rem;
 			padding: 5rem;
 			gap: 2rem;
 			border: 1px solid lightgray;
 			border-radius: 4px;
+			${mq2} {
+				padding: 5rem 1rem;
+				width: 23rem;
+			}
 		`,
 		logoFont: css`
 			color: black;
-			font-size: 30px;
+			font-size: 40px;
 		`,
 		formContainer: css`
 			display: flex;
 			flex-direction: column;
 			gap: 1rem;
+		`,
+		label: css`
+			font-size: 20px;
 		`,
 		input: css`
 			position: relative;
@@ -48,27 +57,29 @@ const Login = () => {
 			border: 1px solid lightgray;
 			padding: 1.2rem 0.5rem;
 			border-radius: 3px;
-			font-size: 16px;
+			font-size: 18px;
 		`,
 		invalidLogin: css`
 			color: #dc0909;
+			font-size: 18px;
 		`,
 		button: css`
-			font-size: 16px;
-			padding: 0.5rem 1rem;
-			background-color: white;
-			border: 1px solid lightgray;
-			border-radius: 4px;
-			transition: 0.2s;
+			background-color: #7caafa;
+			border: 1px solid #ccc;
+			width: 7rem;
+			height: 2.5rem;
+			font-size: 18px;
+			border-radius: 5px;
+			transition: 0.3s;
 			&:hover {
 				cursor: pointer;
-				background-color: #cecece;
+				background-color: #4f8efb;
 			}
 		`,
 		showPassword: css`
 			position: absolute;
 			right: 1rem;
-			top: 2rem;
+			top: 2.3rem;
 		`,
 	};
 
@@ -120,7 +131,9 @@ const Login = () => {
 			<div css={styles.logoFont}>Sign Into Your Account</div>
 			<form css={styles.formContainer} onSubmit={onSubmit}>
 				<div css={styles.input}>
-					<label htmlFor='email'>Email</label>
+					<label css={styles.label} htmlFor='email'>
+						Email
+					</label>
 					<input
 						css={styles.inputBox}
 						id='email'
@@ -129,7 +142,9 @@ const Login = () => {
 					/>
 				</div>
 				<div css={styles.input}>
-					<label htmlFor='password'>Password</label>
+					<label css={styles.label} htmlFor='password'>
+						Password
+					</label>
 					<input
 						css={styles.inputBox}
 						id='password'

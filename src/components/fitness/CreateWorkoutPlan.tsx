@@ -5,7 +5,9 @@ import { useError } from '../../hooks/useError';
 import { doc, setDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '../../firebase.config';
-import remove from '../../assets/svg/red-x-icon.svg';
+import trash from '../../assets/svg/trash.svg';
+import moveUp from '../../assets/svg/moveUp.svg';
+import moveDown from '../../assets/moveDown.png';
 
 interface data {
 	name: string;
@@ -17,23 +19,98 @@ interface data {
 interface Props {
 	workoutPlan: data[];
 	setWorkoutPlan: Function;
+	setSucessfulPopup: Function;
 }
 
 interface Workoutplan {
 	[key: string]: any;
 }
 
-const CreateWorkoutPlan: FC<Props> = ({ workoutPlan, setWorkoutPlan }) => {
+const CreateWorkoutPlan: FC<Props> = ({
+	workoutPlan,
+	setWorkoutPlan,
+	setSucessfulPopup,
+}) => {
+	const mq1 = `@media screen and (max-width: 1283px)`;
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
+		red: css`
+			color: red;
+		`,
 		container: css`
 			display: flex;
+			min-width: 10rem;
 			flex-direction: column;
 			gap: 1rem;
-			background-color: aliceblue;
-			gap: 2rem;
+			${mq1} {
+				width: 30rem;
+			}
+			${mq2} {
+				width: unset;
+			}
 		`,
-		removeButton: css`
-			width: 24px;
+		svgButton: css`
+			width: 18px;
+			&:hover {
+				cursor: pointer;
+			}
+		`,
+		workoutPlanName: css`
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			margin: 0.7rem 0;
+		`,
+		label: css`
+			font-size: 18px;
+		`,
+		input: css`
+			height: 1.8rem;
+			font-size: 16px;
+			padding: 16px 6px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			width: 20rem;
+			${mq2} {
+				width: unset;
+			}
+		`,
+		exercise: css`
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 3rem;
+			margin-bottom: 1rem;
+		`,
+		title: css`
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		`,
+		valueInput: css`
+			width: 3rem;
+			height: 1.5rem;
+			text-align: center;
+		`,
+		moveUpOrDown: css`
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+		`,
+		submitButton: css`
+			height: 2rem;
+			background-color: #7caafa;
+			border: 1px solid #ccc;
+			width: 10rem;
+			height: 3rem;
+			font-size: 18px;
+			border-radius: 5px;
+			transition: 0.3s;
+			&:hover {
+				cursor: pointer;
+				background-color: #4f8efb;
+			}
 		`,
 	};
 
@@ -42,6 +119,7 @@ const CreateWorkoutPlan: FC<Props> = ({ workoutPlan, setWorkoutPlan }) => {
 	const [newWorkoutPlanName, setNewWorkoutPlanName] = useState('');
 
 	useEffect(() => {
+		setNewWorkoutPlan({});
 		workoutPlan.forEach(workout => {
 			setNewWorkoutPlan(prev => ({
 				...prev,
@@ -63,8 +141,6 @@ const CreateWorkoutPlan: FC<Props> = ({ workoutPlan, setWorkoutPlan }) => {
 		const newIndex =
 			workoutPlan.map(workout => workout.name).indexOf(data.name) +
 			(e.target.id === 'up' ? -1 : 1);
-
-		console.log(newIndex);
 
 		if (newIndex < 0 || newIndex > workoutPlan.length) {
 			return;
@@ -102,6 +178,13 @@ const CreateWorkoutPlan: FC<Props> = ({ workoutPlan, setWorkoutPlan }) => {
 	) => {
 		e.preventDefault();
 
+		if (newWorkoutPlanName === '') {
+			return setError({
+				active: true,
+				message: 'Please give your workout plan a name ',
+			});
+		}
+
 		try {
 			const auth = getAuth();
 			const docRef = doc(
@@ -111,68 +194,86 @@ const CreateWorkoutPlan: FC<Props> = ({ workoutPlan, setWorkoutPlan }) => {
 			);
 			await setDoc(docRef, newWorkoutPlan);
 			setError({ active: false, message: '' });
+			setSucessfulPopup(true);
 		} catch (error) {
-			setError({
-				active: true,
-				message: 'Please give your workout plan a name ',
-			});
+			setSucessfulPopup(true);
 		}
 	};
 
 	return (
 		<div css={styles.container}>
-			<div>
-				<label htmlFor=''>Name Workout Plan</label>
-				<input type='text' onChange={addWorkoutPlanName} id='name' />
-			</div>
+			{workoutPlan.length !== 0 && (
+				<div css={styles.workoutPlanName}>
+					<label css={styles.label} htmlFor=''>
+						Name Workout Plan
+					</label>
+					<input
+						css={styles.input}
+						type='text'
+						onChange={addWorkoutPlanName}
+						id='name'
+					/>
+				</div>
+			)}
 			<div>
 				{workoutPlan.map((currentWorkout, index) => (
-					<div>
-						{currentWorkout.name}
-						<div>
-							<label htmlFor=''>Reps</label>
-							<input
-								type='text'
-								id='reps'
-								value={currentWorkout.reps}
-								onChange={e => onChange(e, index)}
+					<div css={styles.exercise} key={index}>
+						<div css={styles.title}>
+							<img
+								src={trash}
+								css={styles.svgButton}
+								alt='remove'
+								onClick={e => removeWorkout(e, currentWorkout.index)}
 							/>
+							<p css={styles.label}>{currentWorkout.name}</p>
 						</div>
-						<div>
-							<label htmlFor=''>Sets</label>
-							<input
-								type='text'
-								id='sets'
-								value={currentWorkout.sets}
-								onChange={e => onChange(e, index)}
-							/>
+						<div css={styles.title}>
+							<div css={styles.title}>
+								<input
+									css={styles.valueInput}
+									type='text'
+									id='reps'
+									placeholder='Reps'
+									onChange={e => onChange(e, index)}
+								/>
+								<input
+									css={styles.valueInput}
+									type='text'
+									id='sets'
+									placeholder='Sets'
+									onChange={e => onChange(e, index)}
+								/>
+							</div>
+							<div css={styles.moveUpOrDown}>
+								<img
+									src={moveUp}
+									alt='up'
+									css={styles.svgButton}
+									id='up'
+									onClick={e => reorder(e, currentWorkout)}
+								/>
+								<img
+									src={moveDown}
+									alt='down'
+									css={styles.svgButton}
+									id='down'
+									onClick={e => reorder(e, currentWorkout)}
+								/>
+							</div>
 						</div>
-						<img
-							src={remove}
-							css={styles.removeButton}
-							alt='remove'
-							onClick={e => removeWorkout(e, currentWorkout.index)}
-						/>
-						<button
-							type='button'
-							id='up'
-							onClick={e => reorder(e, currentWorkout)}
-						>
-							Move Up
-						</button>
-						<button id='down' onClick={e => reorder(e, currentWorkout)}>
-							Move Down
-						</button>
 					</div>
 				))}
 			</div>
+			{error && <div css={styles.red}>{error.message}</div>}
 			{workoutPlan.length > 0 && (
-				<button type='button' onClick={submitNewWorkoutPlan}>
+				<button
+					css={styles.submitButton}
+					type='button'
+					onClick={submitNewWorkoutPlan}
+				>
 					Add Workout Plan To Profile
 				</button>
 			)}
-
-			{error && <div>{error.message}</div>}
 		</div>
 	);
 };

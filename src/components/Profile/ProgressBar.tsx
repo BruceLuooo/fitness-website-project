@@ -10,12 +10,23 @@ interface Props {
 }
 
 const ProgressBar: FC<Props> = ({ totalDays, completedDays }) => {
+	const mq2 = `@media screen and (max-width: 768px)`;
+
+	const styles = {
+		container: css`
+			position: relative;
+			${mq2} {
+				width: 23rem;
+			}
+		`,
+	};
+
 	const percentage = (completedDays / totalDays) * 100;
 
 	return (
-		<div>
+		<div css={styles.container}>
 			<CircularProgressbar
-				value={percentage === NaN ? 0 : percentage}
+				value={percentage}
 				text={`${completedDays} / ${totalDays}`}
 			/>
 		</div>

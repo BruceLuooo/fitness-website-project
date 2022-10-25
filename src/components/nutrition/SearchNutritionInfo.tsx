@@ -1,11 +1,11 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import { useEffect, useState } from 'react';
-import { usePopup } from '../../hooks/usePopup';
 import DisplayNutritionalData from './DisplayNutritionalData';
 import DownArrow from '../../assets/svg/downArrow.svg';
-import Xicon from '../../assets/svg/red-x-icon.svg';
+import Trash from '../../assets/svg/trash.svg';
 import axios from 'axios';
+import FormCompleted from '../FormCompleted';
 
 interface Information {
 	id: number;
@@ -34,27 +34,71 @@ interface Data {
 }
 
 function SearchNutritionInfo() {
+	const mq1 = `@media screen and (max-width: 1283px)`;
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
-		mainContainer: css`
-			width: 100%;
-			display: flex;
-			margin-top: 7rem;
+		h1: css`
+			font-size: 50px;
+			${mq1} {
+				font-size: 40px;
+			}
+			${mq2} {
+				font-size: 30px;
+			}
 		`,
-		label: css`
-			font-size: small;
+		container: css`
+			display: flex;
+			flex-direction: column;
+			gap: 2rem;
+			padding: 2rem;
+			margin-top: 3rem;
+			background-color: whitesmoke;
+			min-width: 70rem;
+			${mq1} {
+				min-width: 50rem;
+			}
+			${mq2} {
+				min-width: 320px;
+			}
+		`,
+		mainContainer: css`
+			display: flex;
+			align-items: center;
+			justify-content: space-around;
+			padding: 0 2rem;
+			gap: 3rem;
+			${mq1} {
+				flex-direction: column;
+				align-items: unset;
+			}
+			${mq2} {
+				padding: 0;
+			}
 		`,
 		formContainer: css`
 			display: flex;
 			flex-direction: column;
-			background-color: aliceblue;
+			${mq2} {
+				gap: 1.5rem;
+			}
 		`,
 		formInput: css`
 			display: flex;
-			gap: 0.5rem;
-			padding: 0.5rem;
 			align-items: center;
+			gap: 1.5rem;
+			padding: 0.5rem;
+			${mq2} {
+				padding: 0;
+			}
 		`,
-		input: css`
+		label: css`
+			font-size: 18px;
+			${mq2} {
+				font-size: 14px;
+			}
+		`,
+		inputStructure: css`
 			display: flex;
 			flex-direction: column;
 			gap: 0.5rem;
@@ -62,17 +106,22 @@ function SearchNutritionInfo() {
 		dropdownContainer: css`
 			text-align: left;
 			position: relative;
-			width: 30%;
 		`,
-		dropdownInput: css`
+		input: css`
 			background-color: white;
 			padding: 5px;
 			display: flex;
+			width: 10rem;
 			align-items: center;
 			justify-content: space-between;
 			user-select: none;
 			border: 1px solid #ccc;
 			border-radius: 5px;
+			font-size: 16px;
+			${mq2} {
+				width: 7rem;
+				font-size: 16px;
+			}
 		`,
 		dropdownMenu: css`
 			position: absolute;
@@ -84,6 +133,15 @@ function SearchNutritionInfo() {
 			max-height: 150px;
 			background-color: white;
 			z-index: 10;
+			${mq2} {
+				width: 70%;
+			}
+		`,
+		dropdownInput: css`
+			width: 6rem;
+			${mq2} {
+				width: 3rem;
+			}
 		`,
 		dropdownitem: css`
 			padding: 5px;
@@ -97,35 +155,51 @@ function SearchNutritionInfo() {
 		`,
 		iconDelete: css`
 			padding-top: 20px;
-			width: 23px;
+			width: 18px;
+			${mq2} {
+				width: 16px;
+			}
 		`,
 		deleteIcon: css`
+			background-color: whitesmoke;
 			border: none;
-			background-color: aliceblue;
+
 			&:hover {
 				cursor: pointer;
+			}
+			${mq2} {
+				transform: translateX(-22px);
 			}
 		`,
 		formButtonsContainer: css`
 			display: flex;
-			flex-direction: column;
 			padding: 0.5rem;
-			width: 100%;
+			width: 70%;
 			gap: 0.5rem;
+			${mq2} {
+				padding: 0.5rem 0rem;
+			}
 		`,
 		button: css`
-			background-color: #14dc14;
-			border: none;
-			height: 32px;
-			border-radius: 10px;
-			font-size: 14px;
+			height: 2rem;
+			background-color: #7caafa;
+			border: 1px solid #ccc;
+			min-width: 10rem;
+			height: 3rem;
+			font-size: 16px;
+			border-radius: 5px;
+			transition: 0.3s;
 			&:hover {
 				cursor: pointer;
+				background-color: #4f8efb;
+			}
+			${mq2} {
+				min-width: 7rem;
+				font-size: 16px;
+				height: 2.5rem;
 			}
 		`,
 	};
-
-	const { popup, setPopup } = usePopup();
 
 	useEffect(() => {
 		const handler = () => setShowMenu(false);
@@ -140,6 +214,7 @@ function SearchNutritionInfo() {
 	const [showMenu, setShowMenu] = useState(false);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [dataRecieved, setDataRecived] = useState<Data[]>([]);
+	const [successfulPopup, setSucessfulPopup] = useState(false);
 
 	const selectOptions = [
 		{ value: '', label: '' },
@@ -190,27 +265,19 @@ function SearchNutritionInfo() {
 			...prevState,
 			{ id: addIngredient, name: '', quantity: 0, metrics: '' },
 		]);
-		setPopup(false);
 	};
 
-	const removeIngredient = (id: number) => {
+	const removeIngredient = (id: number, name: string) => {
 		const filteredIngredients = ingredients.filter(
 			ingredient => ingredient.id !== id,
 		);
-		setPopup(false);
 		setIngredients(filteredIngredients);
-	};
-
-	const dataRecievedRef: Data[] = [];
-
-	const pleaseWork = (e: any) => {
-		// setPopup(true);
-		setDataRecived(dataRecievedRef);
+		setDataRecived([]);
 	};
 
 	const onSubmit = (e: React.SyntheticEvent) => {
 		e.preventDefault();
-		// setDataRecived([]);
+		setDataRecived([]);
 
 		const allInformation = ingredients.map(ingredient => {
 			return `${ingredient.quantity + ingredient.metrics} ${ingredient.name}`;
@@ -224,59 +291,65 @@ function SearchNutritionInfo() {
 				},
 			);
 
-			dataRecievedRef.push({
-				name: information,
-				calories: data.calories,
-				totalNutrients: {
-					FAT: {
-						quantity: data.totalNutrients.FAT.quantity,
-						unit: data.totalNutrients.FAT.unit,
-					},
-					SUGAR: {
-						quantity: data.totalNutrients.SUGAR.quantity,
-						unit: data.totalNutrients.SUGAR.unit,
-					},
-					PROCNT: {
-						quantity: data.totalNutrients.PROCNT.quantity,
-						unit: data.totalNutrients.PROCNT.unit,
+			setDataRecived(prev => [
+				...prev,
+				{
+					name: information,
+					calories: data.calories,
+					totalNutrients: {
+						FAT: {
+							quantity: data.totalNutrients.FAT.quantity,
+							unit: data.totalNutrients.FAT.unit,
+						},
+						SUGAR: {
+							quantity: data.totalNutrients.SUGAR.quantity,
+							unit: data.totalNutrients.SUGAR.unit,
+						},
+						PROCNT: {
+							quantity: data.totalNutrients.PROCNT.quantity,
+							unit: data.totalNutrients.PROCNT.unit,
+						},
 					},
 				},
-			});
+			]);
 		});
 	};
 
 	return (
-		<div css={styles.mainContainer}>
-			<div css={styles.formContainer}>
+		<div css={styles.container}>
+			<h1 css={styles.h1}>Get Nurtritional Information On Your Meals!</h1>
+			<div css={styles.mainContainer}>
 				<form onSubmit={onSubmit} css={styles.formContainer}>
 					{ingredients.map(ingredient => (
 						<div key={ingredient.id} css={styles.formInput}>
-							<div css={styles.input}>
+							<div css={styles.inputStructure}>
 								<label htmlFor='name' css={styles.label}>
-									Food / Ingridient Name
+									Ingridient Name
 								</label>
 								<input
+									css={styles.input}
 									id='name'
 									type='text'
 									required
 									onChange={e => onChange(e, ingredient.id)}
 								/>
 							</div>
-							<div css={styles.input}>
+							<div css={styles.inputStructure}>
 								<label htmlFor='quantity' css={styles.label}>
 									Quantity
 								</label>
 								<input
+									css={styles.input}
 									id='quantity'
 									type='number'
 									required
 									onChange={e => onChange(e, ingredient.id)}
 								/>
 							</div>
-							<div css={[styles.dropdownContainer, styles.input]}>
+							<div css={[styles.dropdownContainer, styles.inputStructure]}>
 								<label css={styles.label}>(Optional)</label>
 								<div
-									css={styles.dropdownInput}
+									css={[styles.input, styles.dropdownInput]}
 									onClick={e => handleInputClick(e, ingredient.id)}
 								>
 									<div>
@@ -303,9 +376,9 @@ function SearchNutritionInfo() {
 
 							<button
 								css={styles.deleteIcon}
-								onClick={() => removeIngredient(ingredient.id)}
+								onClick={() => removeIngredient(ingredient.id, ingredient.name)}
 							>
-								<img css={styles.iconDelete} src={Xicon} alt='close' />
+								<img css={styles.iconDelete} src={Trash} alt='close' />
 							</button>
 						</div>
 					))}
@@ -314,14 +387,22 @@ function SearchNutritionInfo() {
 							+ Ingredient
 						</button>
 						<button css={styles.button} type='submit'>
-							Get Nutritional Info
+							Submit
 						</button>
 					</div>
 				</form>
-				<button onClick={pleaseWork}>submit</button>
+				{!successfulPopup ? (
+					<DisplayNutritionalData
+						dataRecieved={dataRecieved}
+						setSucessfulPopup={setSucessfulPopup}
+					/>
+				) : (
+					<FormCompleted
+						setSucessfulPopup={setSucessfulPopup}
+						text='Nutrition'
+					/>
+				)}
 			</div>
-			{/* {popup && <DisplayNutritionalData dataRecieved={dataRecieved} />} */}
-			<DisplayNutritionalData dataRecieved={dataRecieved} />
 		</div>
 	);
 }

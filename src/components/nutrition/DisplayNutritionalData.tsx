@@ -4,14 +4,11 @@ import { getAuth } from 'firebase/auth';
 import {
 	addDoc,
 	collection,
-	doc,
 	FieldValue,
 	serverTimestamp,
-	setDoc,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { db } from '../../firebase.config';
-import { useError } from '../../hooks/useError';
 
 interface Data {
 	name: string;
@@ -34,6 +31,7 @@ interface Data {
 
 interface Props {
 	dataRecieved: Data[];
+	setSucessfulPopup: Function;
 }
 
 interface LogData {
@@ -41,17 +39,32 @@ interface LogData {
 	loggedDate: FieldValue;
 }
 
-const DisplayNutritionalData = ({ dataRecieved }: Props) => {
+const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
 		h1: css`
 			font-size: 32px;
+			text-decoration: underline;
+			${mq2} {
+				font-size: 30px;
+			}
 		`,
 		h2: css`
 			font-size: 20px;
+			font-weight: 600;
+			text-decoration: underline;
+			${mq2} {
+				font-size: 16px;
+			}
+		`,
+		h3: css`
+			font-size: 18px;
+			${mq2} {
+				font-size: 14px;
+			}
 		`,
 		displayDataContainer: css`
-			background-color: aqua;
-			padding: 1rem 2rem;
 			display: flex;
 			flex-direction: column;
 			gap: 2rem;
@@ -59,12 +72,43 @@ const DisplayNutritionalData = ({ dataRecieved }: Props) => {
 		dataContainer: css`
 			display: flex;
 			gap: 2.5rem;
+			padding-left: 2.5rem;
+			${mq2} {
+				padding-left: 0;
+				gap: 1rem;
+			}
 		`,
 		dataStructure: css`
 			display: flex;
 			flex-direction: column;
 			align-items: center;
 			gap: 2rem;
+		`,
+		total: css`
+			display: flex;
+			justify-content: center;
+			width: 100%;
+			border-top: 2px solid black;
+			padding-top: 2rem;
+			margin-top: -1rem;
+			font-size: 18px;
+			${mq2} {
+				font-size: 16px;
+			}
+		`,
+		button: css`
+			height: 2rem;
+			background-color: #7caafa;
+			border: 1px solid #ccc;
+			width: 10rem;
+			height: 3rem;
+			font-size: 16px;
+			border-radius: 5px;
+			transition: 0.3s;
+			&:hover {
+				cursor: pointer;
+				background-color: #4f8efb;
+			}
 		`,
 	};
 
@@ -80,8 +124,6 @@ const DisplayNutritionalData = ({ dataRecieved }: Props) => {
 		totalSugar += data.totalNutrients.SUGAR.quantity;
 	});
 
-	const { error, setError } = useError();
-
 	const [addDataToLog, setAddDataToLog] = useState<LogData>({
 		loggedDate: serverTimestamp(),
 		ingredients: [],
@@ -89,19 +131,30 @@ const DisplayNutritionalData = ({ dataRecieved }: Props) => {
 	});
 
 	useEffect(() => {
-		dataRecieved.map(data => {
-			setAddDataToLog(prev => ({
-				...prev,
-				ingredients: [
-					...prev.ingredients,
-					`${data.name}: ${Math.round(data.calories)} calories, ${Math.round(
-						data.totalNutrients.PROCNT.quantity,
-					)}g protein, ${Math.round(
-						data.totalNutrients.FAT.quantity,
-					)}g fat, ${Math.round(data.totalNutrients.SUGAR.quantity)}g sugar`,
-				],
-				calories: [...prev.calories, Math.round(data.calories)],
-			}));
+		if (dataRecieved.length === 0) {
+			setAddDataToLog({
+				loggedDate: serverTimestamp(),
+				ingredients: [],
+				calories: [],
+			});
+		}
+
+		const ingredients = dataRecieved.map(data => {
+			return `${data.name}: ${Math.round(data.calories)} calories, ${Math.round(
+				data.totalNutrients.PROCNT.quantity,
+			)}g protein, ${Math.round(
+				data.totalNutrients.FAT.quantity,
+			)}g fat, ${Math.round(data.totalNutrients.SUGAR.quantity)}g sugar`;
+		});
+
+		const calories = dataRecieved.map(data => {
+			return Math.round(data.calories);
+		});
+
+		setAddDataToLog({
+			loggedDate: serverTimestamp(),
+			ingredients: ingredients,
+			calories: calories,
 		});
 	}, [dataRecieved]);
 
@@ -113,12 +166,9 @@ const DisplayNutritionalData = ({ dataRecieved }: Props) => {
 				`users/${auth.currentUser!.uid}/nutrition-log`,
 			);
 			await addDoc(docRef, addDataToLog);
-			setError({ active: false, message: '' });
+			setSucessfulPopup(true);
 		} catch (error) {
-			setError({
-				active: true,
-				message: 'Please give your workout plan a name ',
-			});
+			setSucessfulPopup(true);
 		}
 	};
 
@@ -128,51 +178,59 @@ const DisplayNutritionalData = ({ dataRecieved }: Props) => {
 
 			<div css={styles.dataContainer}>
 				<div css={styles.dataStructure}>
-					<div>Food</div>
+					<h2 css={styles.h2}>Ingridents</h2>
 					{dataRecieved.map(data => (
-						<div key={data.name}>{data.name}</div>
+						<div css={styles.h3} key={data.name}>
+							{data.name} :
+						</div>
 					))}
-					<div>Total</div>
+					<div css={styles.total}>Total :</div>
 				</div>
 				<div css={styles.dataStructure}>
-					<div>Calories</div>
+					<h2 css={styles.h2}>Calories</h2>
 					{dataRecieved.map(data => (
-						<div key={data.calories}>{data.calories}</div>
+						<div css={styles.h3} key={data.calories}>
+							{data.calories}
+						</div>
 					))}
-					<div>{Math.round(totalCalories)}</div>
+					<div css={styles.total}>{Math.round(totalCalories)}</div>
 				</div>
 				<div css={styles.dataStructure}>
-					<div>Protein</div>
+					<h2 css={styles.h2}>Protein</h2>
 					{dataRecieved.map(data => (
-						<div key={data.totalNutrients.PROCNT.quantity}>
+						<div css={styles.h3} key={data.totalNutrients.PROCNT.quantity}>
 							{Math.round(data.totalNutrients.PROCNT.quantity)}
 							{data.totalNutrients.PROCNT.unit}
 						</div>
 					))}
-					<div>{Math.round(totalProtein)}g</div>
+					<div css={styles.total}>{Math.round(totalProtein)}g</div>
 				</div>
 				<div css={styles.dataStructure}>
-					<div>Fat</div>
+					<h2 css={styles.h2}>Fat</h2>
 					{dataRecieved.map(data => (
-						<div key={data.totalNutrients.FAT.quantity}>
+						<div css={styles.h3} key={data.totalNutrients.FAT.quantity}>
 							{Math.round(data.totalNutrients.FAT.quantity)}
 							{data.totalNutrients.FAT.unit}
 						</div>
 					))}
-					<div>{Math.round(totalFat)}g</div>
+					<div css={styles.total}>{Math.round(totalFat)}g</div>
 				</div>
 				<div css={styles.dataStructure}>
-					<div>Sugar</div>
+					<h2 css={styles.h2}>Sugar</h2>
 					{dataRecieved.map(data => (
-						<div key={data.totalNutrients.SUGAR.quantity}>
+						<div css={styles.h3} key={data.totalNutrients.SUGAR.quantity}>
 							{Math.round(data.totalNutrients.SUGAR.quantity)}
 							{data.totalNutrients.SUGAR.unit}
 						</div>
 					))}
-					<div>{Math.round(totalSugar)}g</div>
+					<div css={styles.total}>{Math.round(totalSugar)}g</div>
 				</div>
-				<button onClick={addToNutritionLog}>Add to Nutrition Log</button>
 			</div>
+			{dataRecieved.length > 0 && (
+				<button css={styles.button} onClick={addToNutritionLog}>
+					Add to Nutrition Log
+				</button>
+			)}
 		</div>
 	);
 };

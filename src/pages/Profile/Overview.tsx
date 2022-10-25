@@ -1,15 +1,14 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
 	collection,
 	query,
 	where,
 	getDocs,
 	DocumentData,
-	orderBy,
 } from 'firebase/firestore';
-import DailyCalorieIntake from '../../components/DailyCalorieIntake';
 import ProfileSideBar from '../../components/Profile/ProfileSideBar';
 import ProgressBar from '../../components/Profile/ProgressBar';
 import { getAuth } from 'firebase/auth';
@@ -17,44 +16,136 @@ import { db } from '../../firebase.config';
 import { useMonthlyCalorieTarget } from '../../hooks/useMonthlyCalorieTarget';
 import { useMonthlyWorkoutTarget } from '../../hooks/useMonthlyWorkoutTarget';
 import { useGetCurrentMonth } from '../../hooks/useGetCurrentMonth';
+import PersonalInfo from './PersonalInfo';
 
 const Overview = () => {
+	const mq1 = `@media screen and (max-width: 1283px)`;
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
+		red: css`
+			color: red;
+		`,
+		green: css`
+			color: green;
+		`,
 		container: css`
 			display: flex;
 			flex-direction: column;
+			padding-top: 4rem;
+			max-width: 70rem;
+			margin: auto;
 			gap: 3rem;
 			width: 100%;
 		`,
+		fontsize: css`
+			display: flex;
+			justify-content: center;
+			font-size: 25px;
+			text-decoration: underline;
+		`,
+		overview: css`
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			gap: 5rem;
+			${mq1} {
+				flex-direction: column;
+				align-items: center;
+			}
+			${mq2} {
+			}
+		`,
 		workoutOverviewContainer: css`
-			border: 1px solid black;
 			display: flex;
 			flex-direction: column;
 			gap: 1rem;
-			background-color: aliceblue;
-			width: 25rem;
+			background-color: whitesmoke;
+			width: 30rem;
 			padding: 1.5rem;
+			border-radius: 8px;
+			${mq2} {
+				align-items: center;
+				width: unset;
+			}
+		`,
+		navigate: css`
+			display: flex;
+			gap: 0.3rem;
+			justify-content: center;
 		`,
 		nutritionOverviewContainer: css`
-			border: 1px solid black;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			gap: 1rem;
+			background-color: whitesmoke;
+			width: 30rem;
+			padding: 1.5rem;
+			border-radius: 8px;
+			${mq2} {
+				align-items: center;
+				width: unset;
+			}
+		`,
+		displayCalorieLayout: css`
 			display: flex;
 			flex-direction: column;
 			gap: 1rem;
-			background-color: aliceblue;
-			width: 25rem;
-			padding: 1.5rem;
+			align-items: center;
+		`,
+		displayCalories: css`
+			font-size: 28px;
+			${mq1} {
+				font-size: 24px;
+			}
+		`,
+		button: css`
+			height: 2rem;
+			background-color: #7caafa;
+			border: 1px solid #ccc;
+			width: 8rem;
+			height: 3rem;
+			font-size: 16px;
+			border-radius: 5px;
+			transition: 0.3s;
+			&:hover {
+				cursor: pointer;
+				background-color: #4f8efb;
+			}
+		`,
+		buttonLayout: css`
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+		`,
+		popup: css`
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		`,
+		popupInput: css`
+			width: 3rem;
+			height: 2rem;
+		`,
+		popupButton: css`
+			width: 4rem;
+			height: 2rem;
 		`,
 	};
 
 	const currentMonthAndYear = useGetCurrentMonth();
-	const { calorieTarget, setCalorieTarget } = useMonthlyCalorieTarget();
-	const { workoutTarget, setWorkoutTarget } = useMonthlyWorkoutTarget();
+	const { calorieTarget } = useMonthlyCalorieTarget();
+	const { workoutTarget, changeWorkoutTarget } = useMonthlyWorkoutTarget();
+	const navigate = useNavigate();
 
 	const [monthlyCalorieIntakeLog, setMonthlyCalorieIntakeLog] = useState<
 		DocumentData[]
 	>([]);
 	const [monthlyWorkoutLog, setMonthlyWorkoutLog] = useState<number>(0);
 	const [averageCalorieIntake, setAverageCalorieIntake] = useState<number>(0);
+	const [popup, setPopup] = useState(false);
+	const [updateWorkoutTarget, setUpdateWorkoutTarget] = useState<string>('');
 
 	useEffect(() => {
 		const getWorkoutLogForTheMonth = async () => {
@@ -73,7 +164,7 @@ const Overview = () => {
 		};
 
 		getWorkoutLogForTheMonth();
-	}, []);
+	});
 
 	useEffect(() => {
 		const getCalorieIntakeForTheMonth = async () => {
@@ -99,11 +190,11 @@ const Overview = () => {
 		};
 
 		getCalorieIntakeForTheMonth();
-	}, []);
+	});
 
 	useEffect(() => {
 		const getAverageCalorieIntake = () => {
-			if (monthlyCalorieIntakeLog !== undefined) {
+			if (monthlyCalorieIntakeLog.length !== 0) {
 				let average = 0;
 
 				monthlyCalorieIntakeLog.forEach(log => {
@@ -113,41 +204,99 @@ const Overview = () => {
 					});
 					average += dailycalories;
 				});
-				setAverageCalorieIntake(average / monthlyCalorieIntakeLog.length);
+
+				setAverageCalorieIntake(
+					Math.round(average / monthlyCalorieIntakeLog.length),
+				);
 			} else {
-				return;
+				setAverageCalorieIntake(0);
 			}
 		};
 
 		getAverageCalorieIntake();
 	}, [monthlyCalorieIntakeLog]);
 
+	const changeTotalWorkout = (targetWorkout: string) => {
+		changeWorkoutTarget(targetWorkout);
+		setPopup(false);
+	};
+
 	return (
 		<div>
 			<ProfileSideBar currentState='overview' />
 			<div css={styles.container}>
-				<DailyCalorieIntake setCalorieTarget={setCalorieTarget} />
-				<div css={styles.workoutOverviewContainer}>
-					<p>Monthly Workouts</p>
-					{workoutTarget && calorieTarget !== 0 && (
-						<div>
-							<ProgressBar
-								completedDays={monthlyWorkoutLog}
-								totalDays={workoutTarget}
-							/>
+				<div css={styles.overview}>
+					<div css={styles.workoutOverviewContainer}>
+						<p css={styles.fontsize}>Workouts Completed This Month</p>
+						<ProgressBar
+							completedDays={monthlyWorkoutLog}
+							totalDays={workoutTarget}
+						/>
+						<div css={styles.buttonLayout}>
+							<button
+								css={styles.button}
+								onClick={() => navigate('/profile/fitness')}
+							>
+								Log A Workout
+							</button>
+							<button css={styles.button} onClick={() => setPopup(true)}>
+								Change Total Workouts
+							</button>
+							{popup && (
+								<div css={styles.popup}>
+									<input
+										css={styles.popupInput}
+										type='number'
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+											setUpdateWorkoutTarget(e.target.value)
+										}
+									/>
+									<button
+										css={[styles.button, styles.popupButton]}
+										onClick={() => changeTotalWorkout(updateWorkoutTarget)}
+									>
+										Update
+									</button>
+								</div>
+							)}
 						</div>
-					)}
-					<p>
-						Log A Workout, Click <a href='/profile/fitness'>here</a>
-					</p>
+					</div>
+					<div css={styles.nutritionOverviewContainer}>
+						<p css={styles.fontsize}>Average Calorie Intake This Month</p>
+						<div css={styles.displayCalorieLayout}>
+							<p
+								css={
+									averageCalorieIntake > calorieTarget
+										? [styles.displayCalories, styles.red]
+										: [styles.displayCalories, styles.green]
+								}
+							>
+								Average Per Day : {averageCalorieIntake} Calories
+							</p>
+							<p css={styles.displayCalories}>
+								Target Per Day: {calorieTarget} Calories
+							</p>
+							{averageCalorieIntake > calorieTarget && (
+								<div css={styles.red}>You're Eating Too Many Calories/Day!</div>
+							)}
+						</div>
+						<div css={styles.buttonLayout}>
+							<button
+								css={styles.button}
+								onClick={() => navigate('/nutrition')}
+							>
+								Log Nutrition
+							</button>
+							<button
+								css={styles.button}
+								onClick={() => navigate('/profile/nutrition')}
+							>
+								Change Daily Calorie Intake
+							</button>
+						</div>
+					</div>
 				</div>
-				<div css={styles.nutritionOverviewContainer}>
-					<p>Average Monthly Calorie Intake : {averageCalorieIntake} </p>
-					<p>{calorieTarget} calories / day </p>
-					{averageCalorieIntake > calorieTarget && (
-						<div>You're Eating too got damn much!!!</div>
-					)}
-				</div>
+				<PersonalInfo />
 			</div>
 		</div>
 	);

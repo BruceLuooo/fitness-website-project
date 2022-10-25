@@ -16,6 +16,9 @@ const DropdownMenu: FunctionComponent<Props> = ({
 	selectOptions,
 	onSelectedOption,
 }) => {
+	const mq1 = `@media screen and (max-width: 1283px)`;
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
 		dropdownContainer: css`
 			position: relative;
@@ -38,19 +41,29 @@ const DropdownMenu: FunctionComponent<Props> = ({
 		`,
 		dropdownMenu: css`
 			position: absolute;
-			border: 1px solid #ccc;
+			border: 1px solid blue;
 			border-radius: 5px;
-			width: 25rem;
+			width: 20rem;
 			overflow: auto;
 			max-height: 150px;
 			background-color: white;
 			z-index: 10;
+			${mq1} {
+				width: 11.5rem;
+			}
+			${mq2} {
+				width: 10rem;
+			}
 		`,
 		dropdownitem: css`
 			padding: 5px;
+			font-size: 18px;
 			cursor: pointer;
 			&:hover {
 				background-color: #9fc3f870;
+			}
+			${mq2} {
+				font-size: 16px;
 			}
 		`,
 	};

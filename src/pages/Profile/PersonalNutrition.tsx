@@ -1,16 +1,20 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
+import { useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import {
 	collection,
 	DocumentData,
 	getDocs,
+	limit,
 	orderBy,
 	query,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import DailyCalorieIntake from '../../components/DailyCalorieIntake';
 import ProfileSideBar from '../../components/Profile/ProfileSideBar';
 import { db } from '../../firebase.config';
+import useChangePage from '../../hooks/useChangePage';
 
 interface NutritionLog {
 	ingredients: DocumentData;
@@ -19,30 +23,85 @@ interface NutritionLog {
 }
 
 const PersonalNutrition = () => {
+	const mq1 = `@media screen and (max-width: 1283px)`;
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
 		container: css`
 			display: flex;
 			flex-direction: column;
+			padding-top: 4rem;
+			max-width: 70rem;
+			margin: auto;
 			gap: 3rem;
-			width: 100%;
-			margin-top: 5rem;
+			${mq1} {
+				max-width: 55rem;
+			}
+			${mq2} {
+				max-width: 40rem;
+			}
 		`,
-		workoutOverviewContainer: css`
-			border: 1px solid black;
+		nutritionLogContainer: css`
+			display: flex;
+			flex-direction: column;
+			gap: 1.5rem;
+			background-color: whitesmoke;
+			padding: 1.5rem;
+		`,
+		title: css`
+			display: flex;
+			justify-content: center;
+			font-size: 32px;
+		`,
+		logLayout: css`
 			display: flex;
 			flex-direction: column;
 			gap: 1rem;
-			background-color: aliceblue;
-			width: 50%;
-			padding: 1.5rem;
+		`,
+		date: css`
+			font-size: 20px;
+			text-decoration: underline;
+		`,
+		ingredient: css`
+			padding-left: 2rem;
+			font-size: 16px;
+		`,
+		button: css`
+			height: 2rem;
+			background-color: #7caafa;
+			border: 1px solid #ccc;
+			width: 8rem;
+			height: 3rem;
+			font-size: 16px;
+			border-radius: 5px;
+			transition: 0.3s;
+			&:hover {
+				cursor: pointer;
+				background-color: #4f8efb;
+			}
+		`,
+		firstLogButton: css`
+			font-size: 22px;
+			width: 16rem;
+			height: 5rem;
+		`,
+		buttonLayout: css`
+			display: flex;
+			justify-content: center;
+			gap: 1rem;
 		`,
 	};
 
+	const navigate = useNavigate();
+	const { nextPage, prevPage } = useChangePage();
+
 	const [nutritionLog, setNutritionLog] = useState<NutritionLog[]>([]);
+	const [currentPage, setCurrentPage] = useState(0);
+	const [totalPages, setTotalPages] = useState(0);
 
 	useEffect(() => {
 		const auth = getAuth();
-		const getWorkoutLog = async () => {
+		const getNutritionLog = async () => {
 			const getCollection = collection(
 				db,
 				'users',
@@ -50,9 +109,13 @@ const PersonalNutrition = () => {
 				'nutrition-log',
 			);
 
-			const q = query(getCollection, orderBy('loggedDate'));
+			const firstPageQuery = query(
+				getCollection,
+				orderBy('loggedDate', 'desc'),
+				limit(5),
+			);
 
-			const docSnap = await getDocs(q);
+			const docSnap = await getDocs(firstPageQuery);
 
 			const nutritionLogRef: NutritionLog[] = [];
 
@@ -67,25 +130,79 @@ const PersonalNutrition = () => {
 			setNutritionLog(nutritionLogRef);
 		};
 
-		getWorkoutLog();
+		getNutritionLog();
 	}, []);
+
+	useEffect(() => {
+		const auth = getAuth();
+		const getTotalPages = async () => {
+			const getCollection = collection(
+				db,
+				'users',
+				`${auth.currentUser?.uid}`,
+				'nutrition-log',
+			);
+			const docSnap = await getDocs(getCollection);
+			setTotalPages(Math.ceil(docSnap.docs.length / 5));
+		};
+		getTotalPages();
+	});
+
+	const next = async () => {
+		if (currentPage > totalPages - 1) {
+			return;
+		}
+		const results = await nextPage(currentPage, 'nutrition-log');
+		setNutritionLog(results);
+		setCurrentPage(currentPage + 1);
+	};
+
+	const prev = async () => {
+		const results = await prevPage(currentPage - 1, 'nutrition-log');
+		setNutritionLog(results);
+		if (currentPage <= 1) {
+			setCurrentPage(0);
+		} else {
+			setCurrentPage(currentPage - 1);
+		}
+	};
 
 	return (
 		<div>
 			<ProfileSideBar currentState='nutrition' />
 			<div css={styles.container}>
-				<div css={styles.workoutOverviewContainer}>
-					<p>Nutrition Log</p>
-					{nutritionLog.map(nutrition => (
-						<div>
-							<div>
-								<div>{nutrition.loggedDate}</div>
-								{Object.values(nutrition.ingredients).map((key, index) => (
-									<div key={index}>{key}</div>
-								))}
-							</div>
+				<DailyCalorieIntake />
+				<div css={styles.nutritionLogContainer}>
+					<h1 css={styles.title}>Nutrition Log</h1>
+					{nutritionLog.map((nutrition, index) => (
+						<div css={styles.logLayout} key={index}>
+							<div css={styles.date}>{nutrition.loggedDate}</div>
+							{Object.values(nutrition.ingredients).map((value, index) => (
+								<div css={styles.ingredient} key={index}>
+									{value}
+								</div>
+							))}
 						</div>
 					))}
+					{nutritionLog.length !== 0 ? (
+						<div css={styles.buttonLayout}>
+							<button css={styles.button} onClick={prev}>
+								Prev Page
+							</button>
+							<button css={styles.button} onClick={next}>
+								Next Page
+							</button>
+						</div>
+					) : (
+						<div css={styles.buttonLayout}>
+							<button
+								css={[styles.button, styles.firstLogButton]}
+								onClick={() => navigate('/nutrition')}
+							>
+								Log Your First Meal
+							</button>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
