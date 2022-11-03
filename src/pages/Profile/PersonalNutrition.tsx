@@ -101,8 +101,8 @@ const PersonalNutrition = () => {
 	const [totalPages, setTotalPages] = useState(0);
 
 	const convertDate = (timeStamp: Date) => {
-		alert(timeStamp);
-		return new Date(timeStamp).toDateString();
+		let date = new Date(timeStamp);
+		return `${date.toDateString()} ${date.toLocaleTimeString()}`;
 	};
 
 	useEffect(() => {
@@ -128,7 +128,7 @@ const PersonalNutrition = () => {
 			docSnap.forEach(doc => {
 				return nutritionLogRef.push({
 					ingredients: doc.data().ingredients,
-					loggedDate: `${doc.data().loggedDate.toDate()}`,
+					loggedDate: convertDate(doc.data().loggedDate.toDate()),
 					total: doc.data().total,
 				});
 			});
