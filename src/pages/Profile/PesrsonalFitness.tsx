@@ -337,6 +337,7 @@ const PersonalFitness = () => {
 		getTotalPages();
 	});
 
+	//Open selected Dropdown Menu
 	const handleInputClick = (
 		e: React.MouseEvent<HTMLDivElement, MouseEvent>,
 	) => {
@@ -344,6 +345,7 @@ const PersonalFitness = () => {
 		setShowMenu(!showMenu);
 	};
 
+	//Updates name property in addWorkoutLog State
 	const onSelectedWorkoutPlan = (
 		e: React.MouseEvent<HTMLDivElement>,
 		plan: string,
@@ -354,6 +356,7 @@ const PersonalFitness = () => {
 		}));
 	};
 
+	//Updates note property in addWorkoutLog State
 	const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		setAddWorkoutLog(prev => ({
 			...prev,
@@ -361,6 +364,7 @@ const PersonalFitness = () => {
 		}));
 	};
 
+	//Add workoutLog to Firebase database
 	const logWorkout = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		if (addWorkoutLog.name === '') {
 			return setError({ active: true, message: 'Could not log workout' });
@@ -384,6 +388,7 @@ const PersonalFitness = () => {
 		setCurrentPage(0);
 	};
 
+	// See workout information of selected workout plan
 	const seeWorkoutPlan = (
 		e: React.MouseEvent<HTMLDivElement, MouseEvent>,
 		index: number,
@@ -396,6 +401,7 @@ const PersonalFitness = () => {
 		});
 	};
 
+	// Delete selected workout plan from Firebase Database
 	const deleteWorkoutPlan = async (id: string) => {
 		const auth = getAuth();
 		const docRef = doc(
@@ -413,6 +419,7 @@ const PersonalFitness = () => {
 		});
 	};
 
+	// Next and Prev page of workout Log
 	const prev = async () => {
 		const results = await prevPage(currentPage - 1, 'workout-log');
 		setWorkoutLog(results);

@@ -274,11 +274,13 @@ const SearchExercises = () => {
 	const [workoutPlan, setWorkoutPlan] = useState<WorkoutData[]>([]);
 	const [successfulPopup, setSucessfulPopup] = useState(false);
 
+	// opens dropdown menu
 	const onClick = (e: React.MouseEvent<HTMLDivElement>, number: number) => {
 		e.stopPropagation();
 		setOpenMenu(number);
 	};
 
+	// updates searchQuery State activity or muscleGroup property depending on which dropdown menu was opened
 	const onSelectedOption = (label: string, value: number) => {
 		const findSelectedOption = typeOfExercises.find(
 			option => option.label === label,
@@ -297,6 +299,7 @@ const SearchExercises = () => {
 		}
 	};
 
+	//updates searchQuery State 'search' property
 	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchQuery(prev => ({
 			...prev,
@@ -304,6 +307,7 @@ const SearchExercises = () => {
 		}));
 	};
 
+	// API get request with information from seaerchQuery State. Data then stored into data State
 	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setData([]);
@@ -343,6 +347,7 @@ const SearchExercises = () => {
 		}
 	};
 
+	//Selected data from Data State gets stored into workoutPlan State, which gets passed to CreateWorkoutPlan component
 	const addToWorkoutPlan = async (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
 		data: Data,

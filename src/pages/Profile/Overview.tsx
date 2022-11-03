@@ -147,6 +147,7 @@ const Overview = () => {
 	const [popup, setPopup] = useState(false);
 	const [updateWorkoutTarget, setUpdateWorkoutTarget] = useState<string>('');
 
+	//get Workout Log from Firebase Database and store in monthlyWorkoutLog state
 	useEffect(() => {
 		const getWorkoutLogForTheMonth = async () => {
 			const auth = getAuth();
@@ -166,6 +167,7 @@ const Overview = () => {
 		getWorkoutLogForTheMonth();
 	});
 
+	//get Nutrition Log from Firebase Database and store in monthlyCalorieIntakeLog state
 	useEffect(() => {
 		const getCalorieIntakeForTheMonth = async () => {
 			const auth = getAuth();
@@ -192,6 +194,7 @@ const Overview = () => {
 		getCalorieIntakeForTheMonth();
 	});
 
+	//Calculates average Calorie intake for the month
 	useEffect(() => {
 		const getAverageCalorieIntake = () => {
 			if (monthlyCalorieIntakeLog.length !== 0) {

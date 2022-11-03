@@ -225,6 +225,7 @@ function SearchNutritionInfo() {
 		{ value: 'L', label: 'L' },
 	];
 
+	//Opens selected dropdown menu
 	const handleInputClick = (
 		e: React.MouseEvent<HTMLDivElement, MouseEvent>,
 		index: number,
@@ -234,6 +235,7 @@ function SearchNutritionInfo() {
 		setCurrentIndex(index);
 	};
 
+	//Updates metrics property of selected ingredient found in ingredients useState
 	const onSelectedMetric = (id: number, option: string) => {
 		setIngredients(prev =>
 			prev.map(ingredients => {
@@ -248,6 +250,7 @@ function SearchNutritionInfo() {
 		);
 	};
 
+	//Updates name property of selected ingredient found in ingredients useState
 	const onChange = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
 		setIngredients(prev =>
 			prev.map(ingredient => {
@@ -259,6 +262,7 @@ function SearchNutritionInfo() {
 		);
 	};
 
+	//Adds a new object to ingridents useState
 	const addNewIngredient = () => {
 		setAddIngredient(addIngredient + 1);
 		setIngredients(prevState => [
@@ -267,6 +271,7 @@ function SearchNutritionInfo() {
 		]);
 	};
 
+	//Removes selected object from ingridents useState
 	const removeIngredient = (id: number, name: string) => {
 		const filteredIngredients = ingredients.filter(
 			ingredient => ingredient.id !== id,
@@ -275,10 +280,12 @@ function SearchNutritionInfo() {
 		setDataRecived([]);
 	};
 
+	// API Post request to get data of all ingrients and saved to dataRecieved useState
 	const onSubmit = (e: React.SyntheticEvent) => {
 		e.preventDefault();
 		setDataRecived([]);
 
+		// Joins all the ingridents into a string that is accepted and readable by the api
 		const allInformation = ingredients.map(ingredient => {
 			return `${ingredient.quantity + ingredient.metrics} ${ingredient.name}`;
 		});

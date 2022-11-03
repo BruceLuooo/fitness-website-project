@@ -189,6 +189,8 @@ const DailyCalorieIntake = () => {
 
 	const { error, setError } = useError();
 	const { popup, setPopup } = usePopup();
+
+	//Click anywhere on the screen and the Dropdown Menu will Close
 	useEffect(() => {
 		const handler = () => setOpenMenu(false);
 
@@ -219,6 +221,7 @@ const DailyCalorieIntake = () => {
 		message: '',
 	});
 
+	//Updates data in data useState
 	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setData(prev => ({
 			...prev,
@@ -226,11 +229,13 @@ const DailyCalorieIntake = () => {
 		}));
 	};
 
+	//Opens selected Dropdown Menu
 	const onClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation();
 		setOpenMenu(!openMenu);
 	};
 
+	//Updates activity property in data useState
 	const onSelectedOption = (label: string, value: number) => {
 		setData(prev => ({
 			...prev,
@@ -238,6 +243,7 @@ const DailyCalorieIntake = () => {
 		}));
 	};
 
+	//Returns Average Daily Calorie Intake to maintain weight
 	const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
@@ -272,6 +278,7 @@ const DailyCalorieIntake = () => {
 		}
 	};
 
+	//Stores Daily Calorie Intake target into Firebase database
 	const updateMonthlyCalorieIntake = async (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
 		totalCalories: number,

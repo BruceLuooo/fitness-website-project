@@ -9,6 +9,7 @@ import {
 	limit,
 	orderBy,
 	query,
+	Timestamp,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import DailyCalorieIntake from '../../components/DailyCalorieIntake';
@@ -98,6 +99,11 @@ const PersonalNutrition = () => {
 	const [nutritionLog, setNutritionLog] = useState<NutritionLog[]>([]);
 	const [currentPage, setCurrentPage] = useState(0);
 	const [totalPages, setTotalPages] = useState(0);
+
+	const convertDate = (timeStamp: Date) => {
+		alert(timeStamp);
+		return new Date(timeStamp).toDateString();
+	};
 
 	useEffect(() => {
 		const auth = getAuth();

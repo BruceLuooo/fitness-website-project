@@ -118,6 +118,8 @@ const CreateWorkoutPlan: FC<Props> = ({
 	const [newWorkoutPlan, setNewWorkoutPlan] = useState<Workoutplan>({});
 	const [newWorkoutPlanName, setNewWorkoutPlanName] = useState('');
 
+	//data from workoutPlan state gets stored into NewWorkoutPlan State
+	//but adjusted in a way so that it can be stored in Firebase database
 	useEffect(() => {
 		setNewWorkoutPlan({});
 		workoutPlan.forEach(workout => {
@@ -128,6 +130,7 @@ const CreateWorkoutPlan: FC<Props> = ({
 		});
 	}, [workoutPlan]);
 
+	//Remove workout from workoutPlan State
 	const removeWorkout = (
 		e: React.MouseEvent<HTMLImageElement>,
 		index: number,
@@ -137,6 +140,7 @@ const CreateWorkoutPlan: FC<Props> = ({
 		setWorkoutPlan(remove);
 	};
 
+	//Reorder workout from workoutPlan State
 	const reorder = (e: any, data: data) => {
 		const newIndex =
 			workoutPlan.map(workout => workout.name).indexOf(data.name) +
@@ -154,6 +158,7 @@ const CreateWorkoutPlan: FC<Props> = ({
 		setWorkoutPlan(newArray);
 	};
 
+	//Updates the reps and sets fields in a selected workout found in workoutPlan State
 	const onChange = (e: any, index: number) => {
 		let clone = [...workoutPlan];
 		let obj = clone[index];
@@ -169,10 +174,12 @@ const CreateWorkoutPlan: FC<Props> = ({
 		}
 	};
 
+	//Sets the ID of the workoutplan that would be found in Firebase Database
 	const addWorkoutPlanName = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setNewWorkoutPlanName(e.target.value);
 	};
 
+	//Stores new workout into Firebase Database
 	const submitNewWorkoutPlan = async (
 		e: React.MouseEvent<HTMLButtonElement>,
 	) => {

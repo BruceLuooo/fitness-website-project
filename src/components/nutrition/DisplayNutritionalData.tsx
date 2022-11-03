@@ -117,6 +117,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 	let totalFat = 0;
 	let totalSugar = 0;
 
+	//Get total for all nutritional information
 	dataRecieved.forEach(data => {
 		totalCalories += data.calories;
 		totalFat += data.totalNutrients.FAT.quantity;
@@ -130,6 +131,8 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 		calories: [],
 	});
 
+	//Store data from dataReceived State into addDataToLog State
+	//but adjusted in a way so that it can be stored in Firebase database
 	useEffect(() => {
 		if (dataRecieved.length === 0) {
 			setAddDataToLog({
@@ -158,6 +161,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 		});
 	}, [dataRecieved]);
 
+	//Stores new data into Firebase Database
 	const addToNutritionLog = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		try {
 			const auth = getAuth();
