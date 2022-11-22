@@ -1,8 +1,13 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import logo from '../assets/Trifecta-Logo.jpeg';
+import logo from '../assets/logo.png';
 import { useNavigate } from 'react-router-dom';
-import { getAuth } from 'firebase/auth';
+import {
+	browserSessionPersistence,
+	getAuth,
+	setPersistence,
+	signInWithEmailAndPassword,
+} from 'firebase/auth';
 import Hamburger from '../assets/hamburger.png';
 import { useState } from 'react';
 
@@ -24,13 +29,14 @@ const Navbar = () => {
 			width: 100%;
 			align-items: center;
 			justify-content: space-between;
-			padding: 15px 100px;
+			padding: 0.5rem 1rem;
 			${mq1} {
-				padding: 15px 25px;
+				padding: 0.5rem 0;
 			}
 		`,
 		logo: css`
 			text-decoration: none;
+			font-weight: 600;
 		`,
 		logoImage: css`
 			width: 50px;
@@ -70,6 +76,15 @@ const Navbar = () => {
 				opacity: 70%;
 				text-shadow: 1px;
 			}
+			${mq1} {
+				padding: unset;
+			}
+		`,
+		demoLogin: css`
+			border: none;
+			background-color: whitesmoke;
+			font-size: 100%;
+			cursor: pointer;
 		`,
 		logout: css`
 			color: black;
@@ -80,41 +95,58 @@ const Navbar = () => {
 				text-shadow: 1px;
 			}
 		`,
-		dropDownMenu: css`
+		dropDownMenuImage: css`
 			display: none;
 			${mq1} {
 				display: block;
+				padding: 1rem;
 			}
 		`,
 		DropdownMenuView: css`
 			${mq1} {
 				display: contents;
 				position: absolute;
-				top: 4rem;
-				padding-top: 2rem;
+				top: 5rem;
+				padding-top: 3rem;
 				display: flex;
 				flex-direction: column;
 				justify-content: flex-start;
 				align-items: center;
 				gap: 2rem;
-				width: 100vw;
+				width: 100%;
 				height: 100vh;
-				background-color: whitesmoke;
-				font-size: 40px;
+				background-color: white;
+				font-size: 20px;
 			}
 		`,
 	};
 
 	const navigate = useNavigate();
 	const auth = getAuth();
-	const token = localStorage.getItem('token');
+	const token = sessionStorage.getItem('token');
 	const [openMenu, setOpenMenu] = useState<Boolean>(false);
 
 	const logout = () => {
 		auth.signOut();
-		localStorage.removeItem('token');
+		sessionStorage.removeItem('token');
 		navigate('/');
 		setOpenMenu(false);
+	};
+
+	const demoLogin = async () => {
+		setPersistence(auth, browserSessionPersistence).then(async () => {
+			const { user } = await signInWithEmailAndPassword(
+				auth,
+				`bruceluo@gmail.com`,
+				`bruceluo`,
+			);
+
+			if (user) {
+				const token = await user.getIdToken();
+				sessionStorage.setItem('token', token);
+				navigate('/profile/overview');
+			}
+		});
 	};
 
 	return (
@@ -127,21 +159,6 @@ const Navbar = () => {
 					</div>
 				</a>
 				<ul css={[styles.navbar, openMenu && styles.DropdownMenuView]}>
-					<li>
-						<a css={styles.navigationItems} href='/'>
-							Home
-						</a>
-					</li>
-					<li>
-						<a css={styles.navigationItems} href='/fitness'>
-							Fitness
-						</a>
-					</li>
-					<li>
-						<a css={styles.navigationItems} href='/nutrition'>
-							Nutrition
-						</a>
-					</li>
 					{token && (
 						<li>
 							<a css={styles.navigationItems} href='/profile/overview'>
@@ -163,11 +180,17 @@ const Navbar = () => {
 							<a css={styles.navigationItems} href='/login'>
 								Login
 							</a>
+							<button
+								css={[styles.navigationItems, styles.demoLogin]}
+								onClick={demoLogin}
+							>
+								Demo Login{' '}
+							</button>
 						</li>
 					)}
 				</ul>
 				<img
-					css={[styles.dropDownMenu]}
+					css={[styles.dropDownMenuImage]}
 					src={Hamburger}
 					alt='hamburger'
 					onClick={() => setOpenMenu(!openMenu)}

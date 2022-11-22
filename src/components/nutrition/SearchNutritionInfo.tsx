@@ -3,9 +3,11 @@ import { css } from '@emotion/react';
 import { useEffect, useState } from 'react';
 import DisplayNutritionalData from './DisplayNutritionalData';
 import DownArrow from '../../assets/svg/downArrow.svg';
-import Trash from '../../assets/svg/trash.svg';
+import redX from '../../assets/redx.png';
 import axios from 'axios';
 import FormCompleted from '../FormCompleted';
+import useDelay from '../../hooks/useDelay';
+import LoadingSpinner from '../LoadingSpinner';
 
 interface Information {
 	id: number;
@@ -22,7 +24,7 @@ interface Data {
 			quantity: number;
 			unit: string;
 		};
-		SUGAR: {
+		SUGAR?: {
 			quantity: number;
 			unit: string;
 		};
@@ -38,8 +40,12 @@ function SearchNutritionInfo() {
 	const mq2 = `@media screen and (max-width: 768px)`;
 
 	const styles = {
+		fontColor: css`
+			color: black;
+		`,
 		h1: css`
-			font-size: 50px;
+			font-size: 32px;
+			font-weight: 600;
 			${mq1} {
 				font-size: 40px;
 			}
@@ -51,51 +57,69 @@ function SearchNutritionInfo() {
 			display: flex;
 			flex-direction: column;
 			gap: 2rem;
-			padding: 2rem;
-			margin-top: 3rem;
-			background-color: whitesmoke;
+			padding: 3rem;
+			margin: 0 1rem;
+			background-color: white;
+			box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+				0 10px 10px rgba(0, 0, 0, 0.22);
+			border-radius: 6px;
 			min-width: 70rem;
 			${mq1} {
-				min-width: 50rem;
+				min-width: unset;
+				align-items: center;
 			}
 			${mq2} {
-				min-width: 320px;
+				padding: 1rem;
+				align-items: unset;
 			}
 		`,
 		mainContainer: css`
 			display: flex;
-			align-items: center;
 			justify-content: space-around;
-			padding: 0 2rem;
-			gap: 3rem;
+			gap: 2rem;
 			${mq1} {
 				flex-direction: column;
-				align-items: unset;
+				max-width: 50rem;
+				width: 100%;
+				align-items: center;
 			}
 			${mq2} {
 				padding: 0;
+				align-items: unset;
 			}
 		`,
 		formContainer: css`
 			display: flex;
 			flex-direction: column;
+			border: 2px solid #eeedf3;
+			padding: 2rem;
+			border-radius: 6px;
 			${mq2} {
 				gap: 1.5rem;
+				padding: 1rem;
+			}
+		`,
+		displaySpinnerContainer: css`
+			border-radius: 6px;
+			background-color: whitesmoke;
+			padding: 1rem 10rem;
+			${mq2} {
+				padding: 1rem;
 			}
 		`,
 		formInput: css`
 			display: flex;
 			align-items: center;
-			gap: 1.5rem;
+			gap: 1rem;
 			padding: 0.5rem;
 			${mq2} {
 				padding: 0;
 			}
 		`,
 		label: css`
-			font-size: 18px;
+			font-size: 16px;
 			${mq2} {
-				font-size: 14px;
+				font-size: 15px;
 			}
 		`,
 		inputStructure: css`
@@ -111,7 +135,8 @@ function SearchNutritionInfo() {
 			background-color: white;
 			padding: 5px;
 			display: flex;
-			width: 10rem;
+			max-width: 10rem;
+			width: 100%;
 			align-items: center;
 			justify-content: space-between;
 			user-select: none;
@@ -119,8 +144,8 @@ function SearchNutritionInfo() {
 			border-radius: 5px;
 			font-size: 16px;
 			${mq2} {
-				width: 7rem;
-				font-size: 16px;
+				max-width: 10rem;
+				font-size: 14px;
 			}
 		`,
 		dropdownMenu: css`
@@ -154,14 +179,14 @@ function SearchNutritionInfo() {
 			width: 15px;
 		`,
 		iconDelete: css`
-			padding-top: 20px;
+			padding-top: 26px;
+
 			width: 18px;
 			${mq2} {
 				width: 16px;
 			}
 		`,
 		deleteIcon: css`
-			background-color: whitesmoke;
 			border: none;
 
 			&:hover {
@@ -181,12 +206,13 @@ function SearchNutritionInfo() {
 			}
 		`,
 		button: css`
-			height: 2rem;
 			background-color: #7caafa;
-			border: 1px solid #ccc;
-			min-width: 10rem;
-			height: 3rem;
-			font-size: 16px;
+			border: none;
+			box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+			width: 6rem;
+			height: 2.5rem;
+			font-size: 14px;
+			color: white;
 			border-radius: 5px;
 			transition: 0.3s;
 			&:hover {
@@ -201,11 +227,13 @@ function SearchNutritionInfo() {
 		`,
 	};
 
+	const { loading, setLoading, delay } = useDelay();
+
 	useEffect(() => {
 		const handler = () => setShowMenu(false);
 
 		window.addEventListener('click', handler);
-	});
+	}, []);
 
 	const [ingredients, setIngredients] = useState<Information[]>([
 		{ id: 1, name: '', quantity: 0, metrics: '' },
@@ -269,6 +297,7 @@ function SearchNutritionInfo() {
 			...prevState,
 			{ id: addIngredient, name: '', quantity: 0, metrics: '' },
 		]);
+		setSucessfulPopup(false);
 	};
 
 	//Removes selected object from ingridents useState
@@ -278,11 +307,13 @@ function SearchNutritionInfo() {
 		);
 		setIngredients(filteredIngredients);
 		setDataRecived([]);
+		setSucessfulPopup(false);
 	};
 
 	// API Post request to get data of all ingrients and saved to dataRecieved useState
-	const onSubmit = (e: React.SyntheticEvent) => {
+	const onSubmit = async (e: React.SyntheticEvent) => {
 		e.preventDefault();
+		setLoading(true);
 		setDataRecived([]);
 
 		// Joins all the ingridents into a string that is accepted and readable by the api
@@ -291,77 +322,93 @@ function SearchNutritionInfo() {
 		});
 
 		allInformation.map(async information => {
-			const { data } = await axios.post(
-				`https://api.edamam.com/api/nutrition-details?app_id=${process.env.REACT_APP_ID}&app_key=${process.env.REACT_APP_KEY}`,
-				{
-					ingr: [information],
-				},
-			);
+			try {
+				const { data } = await axios.post(
+					`https://api.edamam.com/api/nutrition-details?app_id=${process.env.REACT_APP_ID}&app_key=${process.env.REACT_APP_KEY}`,
+					{
+						ingr: [information],
+					},
+				);
 
-			setDataRecived(prev => [
-				...prev,
-				{
-					name: information,
-					calories: data.calories,
-					totalNutrients: {
-						FAT: {
-							quantity: data.totalNutrients.FAT.quantity,
-							unit: data.totalNutrients.FAT.unit,
-						},
-						SUGAR: {
-							quantity: data.totalNutrients.SUGAR.quantity,
-							unit: data.totalNutrients.SUGAR.unit,
-						},
-						PROCNT: {
-							quantity: data.totalNutrients.PROCNT.quantity,
-							unit: data.totalNutrients.PROCNT.unit,
+				if (data.status === 555) return;
+
+				setDataRecived(prev => [
+					...prev,
+					{
+						name: information,
+						calories: data.calories,
+						totalNutrients: {
+							FAT: {
+								quantity: data.totalNutrients.FAT.quantity,
+								unit: data.totalNutrients.FAT.unit,
+							},
+							SUGAR: {
+								quantity: data.totalNutrients.SUGAR?.quantity,
+								unit: data.totalNutrients.SUGAR?.unit,
+							},
+							PROCNT: {
+								quantity: data.totalNutrients.PROCNT.quantity,
+								unit: data.totalNutrients.PROCNT.unit,
+							},
 						},
 					},
-				},
-			]);
+				]);
+			} catch (error) {
+				return;
+			}
 		});
+
+		await delay(2000);
+		setLoading(false);
 	};
 
 	return (
 		<div css={styles.container}>
-			<h1 css={styles.h1}>Get Nurtritional Information On Your Meals!</h1>
+			<h1 css={[styles.h1, styles.fontColor]}>
+				Search Nutritional Data To Log
+			</h1>
 			<div css={styles.mainContainer}>
 				<form onSubmit={onSubmit} css={styles.formContainer}>
 					{ingredients.map(ingredient => (
 						<div key={ingredient.id} css={styles.formInput}>
 							<div css={styles.inputStructure}>
-								<label htmlFor='name' css={styles.label}>
-									Ingridient Name
+								<label htmlFor='name' css={[styles.label, styles.fontColor]}>
+									Ingridient
 								</label>
 								<input
 									css={styles.input}
 									id='name'
 									type='text'
+									placeholder='ex. chicken breast'
 									required
 									onChange={e => onChange(e, ingredient.id)}
 								/>
 							</div>
 							<div css={styles.inputStructure}>
-								<label htmlFor='quantity' css={styles.label}>
+								<label
+									htmlFor='quantity'
+									css={[styles.label, styles.fontColor]}
+								>
 									Quantity
 								</label>
 								<input
 									css={styles.input}
 									id='quantity'
 									type='number'
+									placeholder='ex. 1'
 									required
 									onChange={e => onChange(e, ingredient.id)}
 								/>
 							</div>
 							<div css={[styles.dropdownContainer, styles.inputStructure]}>
-								<label css={styles.label}>(Optional)</label>
+								<label css={[styles.label, styles.fontColor]}>(Optional)</label>
 								<div
 									css={[styles.input, styles.dropdownInput]}
 									onClick={e => handleInputClick(e, ingredient.id)}
 								>
-									<div>
+									<span>
 										{ingredient.metrics === '' ? '' : `${ingredient.metrics}`}
-									</div>
+									</span>
 									<img src={DownArrow} alt='' css={styles.icon} />
 								</div>
 								{ingredient.id === currentIndex && showMenu === true && (
@@ -381,12 +428,12 @@ function SearchNutritionInfo() {
 								)}
 							</div>
 
-							<button
+							<div
 								css={styles.deleteIcon}
 								onClick={() => removeIngredient(ingredient.id, ingredient.name)}
 							>
-								<img css={styles.iconDelete} src={Trash} alt='close' />
-							</button>
+								<img css={styles.iconDelete} src={redX} alt='close' />
+							</div>
 						</div>
 					))}
 					<div css={styles.formButtonsContainer}>
@@ -399,10 +446,18 @@ function SearchNutritionInfo() {
 					</div>
 				</form>
 				{!successfulPopup ? (
-					<DisplayNutritionalData
-						dataRecieved={dataRecieved}
-						setSucessfulPopup={setSucessfulPopup}
-					/>
+					<div>
+						{loading ? (
+							<div css={styles.displaySpinnerContainer}>
+								<LoadingSpinner />
+							</div>
+						) : (
+							<DisplayNutritionalData
+								dataRecieved={dataRecieved}
+								setSucessfulPopup={setSucessfulPopup}
+							/>
+						)}
+					</div>
 				) : (
 					<FormCompleted
 						setSucessfulPopup={setSucessfulPopup}

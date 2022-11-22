@@ -5,7 +5,12 @@ import show from '../assets/showPassword.png';
 import hide from '../assets/hidePassword.png';
 import { useNavigate } from 'react-router-dom';
 import { useError } from '../hooks/useError';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import {
+	browserSessionPersistence,
+	getAuth,
+	setPersistence,
+	signInWithEmailAndPassword,
+} from 'firebase/auth';
 
 interface login {
 	email: string;
@@ -106,24 +111,27 @@ const Login = () => {
 			return setError({ active: true, message: 'Please fill in all fields' });
 		}
 
-		try {
-			const auth = getAuth();
+		const auth = getAuth();
 
-			const { user } = await signInWithEmailAndPassword(
-				auth,
-				loginInfo.email,
-				loginInfo.password,
-			);
+		setPersistence(auth, browserSessionPersistence).then(async () => {
+			try {
+				const { user } = await signInWithEmailAndPassword(
+					auth,
+					loginInfo.email,
+					loginInfo.password,
+				);
 
-			if (user) {
-				setError({ active: false, message: '' });
-				const token = await user.getIdToken();
-				localStorage.setItem('token', token);
-				navigate('/profile/overview');
+				if (user) {
+					setError({ active: false, message: '' });
+					const token = await user.getIdToken();
+					sessionStorage.setItem('token', token);
+					navigate('/profile/overview');
+				}
+			} catch (error) {
+				console.log('wrong email/password');
+				return setError({ active: true, message: 'Invalid Email/Password' });
 			}
-		} catch (error) {
-			return setError({ active: true, message: 'Invalid Email/Passowrd' });
-		}
+		});
 	};
 
 	return (

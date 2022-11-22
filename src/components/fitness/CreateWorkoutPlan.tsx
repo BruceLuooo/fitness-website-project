@@ -5,7 +5,7 @@ import { useError } from '../../hooks/useError';
 import { doc, setDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '../../firebase.config';
-import trash from '../../assets/svg/trash.svg';
+import redx from '../../assets/redx.png';
 import moveUp from '../../assets/svg/moveUp.svg';
 import moveDown from '../../assets/moveDown.png';
 
@@ -40,14 +40,15 @@ const CreateWorkoutPlan: FC<Props> = ({
 		`,
 		container: css`
 			display: flex;
-			min-width: 10rem;
+
+			height: 40rem;
 			flex-direction: column;
-			gap: 1rem;
 			${mq1} {
-				width: 30rem;
+				max-width: 30rem;
 			}
 			${mq2} {
 				width: unset;
+				height: 30rem;
 			}
 		`,
 		svgButton: css`
@@ -63,7 +64,7 @@ const CreateWorkoutPlan: FC<Props> = ({
 			margin: 0.7rem 0;
 		`,
 		label: css`
-			font-size: 18px;
+			font-size: 17px;
 		`,
 		input: css`
 			height: 1.8rem;
@@ -71,10 +72,16 @@ const CreateWorkoutPlan: FC<Props> = ({
 			padding: 16px 6px;
 			border: 1px solid #ccc;
 			border-radius: 5px;
-			width: 20rem;
+			max-width: 20rem;
+			width: 100%;
 			${mq2} {
 				width: unset;
 			}
+		`,
+		workoutListContainer: css`
+			max-height: 19rem;
+			overflow-y: auto;
+			width: 100%;
 		`,
 		exercise: css`
 			display: flex;
@@ -82,6 +89,13 @@ const CreateWorkoutPlan: FC<Props> = ({
 			align-items: center;
 			gap: 3rem;
 			margin-bottom: 1rem;
+			max-width: 25rem;
+			width: 100%;
+			${mq2} {
+				flex-direction: column;
+				gap: 1rem;
+				align-items: unset;
+			}
 		`,
 		title: css`
 			display: flex;
@@ -92,6 +106,9 @@ const CreateWorkoutPlan: FC<Props> = ({
 			width: 3rem;
 			height: 1.5rem;
 			text-align: center;
+			${mq2} {
+				height: 2rem;
+			}
 		`,
 		moveUpOrDown: css`
 			display: flex;
@@ -99,14 +116,15 @@ const CreateWorkoutPlan: FC<Props> = ({
 			gap: 5px;
 		`,
 		submitButton: css`
-			height: 2rem;
 			background-color: #7caafa;
 			border: 1px solid #ccc;
+			color: white;
 			width: 10rem;
-			height: 3rem;
-			font-size: 18px;
+			height: 4rem;
+			font-size: 16px;
 			border-radius: 5px;
 			transition: 0.3s;
+			margin-top: 1rem;
 			&:hover {
 				cursor: pointer;
 				background-color: #4f8efb;
@@ -138,6 +156,7 @@ const CreateWorkoutPlan: FC<Props> = ({
 		const remove = workoutPlan.filter(workout => workout.index !== index);
 
 		setWorkoutPlan(remove);
+		setError({ active: false, message: '' });
 	};
 
 	//Reorder workout from workoutPlan State
@@ -202,6 +221,7 @@ const CreateWorkoutPlan: FC<Props> = ({
 			await setDoc(docRef, newWorkoutPlan);
 			setError({ active: false, message: '' });
 			setSucessfulPopup(true);
+			window.location.reload();
 		} catch (error) {
 			setSucessfulPopup(true);
 		}
@@ -209,9 +229,10 @@ const CreateWorkoutPlan: FC<Props> = ({
 
 	return (
 		<div css={styles.container}>
+			<span>Step 3: Add workout plan to Profile</span>
 			{workoutPlan.length !== 0 && (
 				<div css={styles.workoutPlanName}>
-					<label css={styles.label} htmlFor=''>
+					<label css={styles.label} htmlFor='name'>
 						Name Workout Plan
 					</label>
 					<input
@@ -222,17 +243,17 @@ const CreateWorkoutPlan: FC<Props> = ({
 					/>
 				</div>
 			)}
-			<div>
+			<div css={styles.workoutListContainer}>
 				{workoutPlan.map((currentWorkout, index) => (
 					<div css={styles.exercise} key={index}>
 						<div css={styles.title}>
 							<img
-								src={trash}
+								src={redx}
 								css={styles.svgButton}
 								alt='remove'
 								onClick={e => removeWorkout(e, currentWorkout.index)}
 							/>
-							<p css={styles.label}>{currentWorkout.name}</p>
+							<span css={styles.label}>{currentWorkout.name}</span>
 						</div>
 						<div css={styles.title}>
 							<div css={styles.title}>

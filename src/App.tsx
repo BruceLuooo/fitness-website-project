@@ -4,16 +4,15 @@ import emotionReset from 'emotion-reset';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Navbar from './components/Navbar';
-import Nutrition from './pages/Nutrition';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Overview from './pages/Profile/Overview';
-import Fitness from './pages/Fitness';
 import PersonalInfo from './pages/Profile/PersonalInfo';
 import PersonalNutrition from './pages/Profile/PersonalNutrition';
 import PersonalFitness from './pages/Profile/PesrsonalFitness';
-import PrivateRoute from './components/PrivateRoute';
+import PrivateRoute from './components/privateRoutes/PrivateRoute';
 import PageNotFound from './pages/PageNotFound';
+import LoggedInRoute from './components/privateRoutes/LoggedInRoute';
 
 function App() {
 	return (
@@ -22,8 +21,9 @@ function App() {
 				styles={css`
 					${emotionReset}
 					body {
-						font-family: 'Roboto', sans-serif;
+						font-family: 'Roboto Condensed', sans-serif;
 						margin-top: 81px;
+						background-color: #f3f3f4;
 					}
 					*,
 					*::after,
@@ -37,10 +37,12 @@ function App() {
 			<Navbar />
 			<Routes>
 				<Route path='/' element={<Home />} />
-				<Route path='/nutrition' element={<Nutrition />} />
-				<Route path='/fitness' element={<Fitness />} />
-				<Route path='/login' element={<Login />} />
-				<Route path='/register' element={<Register />} />
+				<Route path='/login' element={<LoggedInRoute />}>
+					<Route path='/login' element={<Login />} />
+				</Route>
+				<Route path='/register' element={<LoggedInRoute />}>
+					<Route path='/register' element={<Register />} />
+				</Route>
 				<Route path='/profile' element={<PrivateRoute />}>
 					<Route path='/profile/overview' element={<Overview />} />
 					<Route path='/profile/nutrition' element={<PersonalNutrition />} />

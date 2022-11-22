@@ -7,7 +7,6 @@ import {
 	orderBy,
 	query,
 	startAfter,
-	startAt,
 } from 'firebase/firestore';
 import { db } from '../firebase.config';
 
@@ -18,6 +17,11 @@ interface NutritionLog {
 }
 
 const useChangePage = () => {
+	const convertDate = (timeStamp: Date) => {
+		let date = new Date(timeStamp);
+		return `${date.toDateString()} ${date.toLocaleTimeString()}`;
+	};
+
 	const nextPage = async (currentPage: number, log: string) => {
 		const auth = getAuth();
 		const getCollection = collection(
@@ -50,7 +54,7 @@ const useChangePage = () => {
 		result.forEach(doc => {
 			return nutritionLogRef.push({
 				ingredients: doc.data().ingredients,
-				loggedDate: `${doc.data().loggedDate.toDate()}`,
+				loggedDate: convertDate(doc.data().loggedDate.toDate()),
 				total: doc.data().total,
 			});
 		});
@@ -81,7 +85,7 @@ const useChangePage = () => {
 			docSnap.forEach(doc => {
 				return nutritionLogRef.push({
 					ingredients: doc.data().ingredients,
-					loggedDate: `${doc.data().loggedDate.toDate()}`,
+					loggedDate: convertDate(doc.data().loggedDate.toDate()),
 					total: doc.data().total,
 				});
 			});
@@ -112,7 +116,7 @@ const useChangePage = () => {
 		test.forEach(doc => {
 			return nutritionLogRef.push({
 				ingredients: doc.data().ingredients,
-				loggedDate: `${doc.data().loggedDate.toDate()}`,
+				loggedDate: convertDate(doc.data().loggedDate.toDate()),
 				total: doc.data().total,
 			});
 		});

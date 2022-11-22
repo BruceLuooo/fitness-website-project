@@ -29,63 +29,122 @@ const Overview = () => {
 		green: css`
 			color: green;
 		`,
+		largeFont: css`
+			font-size: 28px;
+			font-weight: 600;
+			${mq2} {
+				font-size: 24px;
+			}
+		`,
+		mediumFont: css`
+			font-size: 24px;
+		`,
+		smallFont: css`
+			font-size: 16px;
+			color: gray;
+			${mq2} {
+				font-size: 14px;
+			}
+		`,
+		sideBar: css`
+			max-width: 800px;
+			width: 100%;
+			margin: auto;
+		`,
 		container: css`
 			display: flex;
 			flex-direction: column;
 			padding-top: 4rem;
-			max-width: 70rem;
+			max-width: 80%;
 			margin: auto;
 			gap: 3rem;
 			width: 100%;
+			border-left: 4px solid white;
+			${mq1} {
+				max-width: 95%;
+			}
+			${mq2} {
+				border-left: unset;
+				padding-top: 2rem;
+			}
 		`,
-		fontsize: css`
+		overviewLabel: css`
 			display: flex;
-			justify-content: center;
-			font-size: 25px;
-			text-decoration: underline;
+			justify-content: flex-start;
+			font-weight: 600;
+			${mq1} {
+				text-decoration: underline;
+				text-underline-offset: 6px;
+			}
 		`,
 		overview: css`
 			display: flex;
-			flex-direction: row;
-			justify-content: space-between;
-			gap: 5rem;
+			height: 30rem;
+			margin: auto;
+			padding: 2rem 0 0 8rem;
+			gap: 1.5rem;
+			margin: 0 1rem;
+			background-color: white;
+			border-radius: 6px;
+			box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+				0 10px 10px rgba(0, 0, 0, 0.22);
 			${mq1} {
 				flex-direction: column;
 				align-items: center;
+				height: unset;
+				padding: 1rem;
+				margin: 0;
 			}
 			${mq2} {
+				width: 100%;
 			}
 		`,
-		workoutOverviewContainer: css`
+		overviewContainer: css`
 			display: flex;
 			flex-direction: column;
-			gap: 1rem;
-			background-color: whitesmoke;
-			width: 30rem;
-			padding: 1.5rem;
-			border-radius: 8px;
-			${mq2} {
-				align-items: center;
-				width: unset;
+			gap: 2.5rem;
+			max-width: 45rem;
+			padding: 1rem 0 0 1rem;
+			width: 100%;
+			${mq1} {
+				align-items: flex-start;
+				border: 2px solid black;
+				padding-bottom: 1rem;
+				border-radius: 6px;
 			}
+		`,
+		workoutDataContainer: css`
+			display: flex;
+			align-items: center;
+			gap: 1.5rem;
+		`,
+		dataLayout: css`
+			display: flex;
+			flex-direction: column;
+			gap: 2rem;
+		`,
+		alignment: css`
+			display: flex;
+			justify-content: center;
+			gap: 2rem;
+			height: 14.5rem;
+		`,
+		workoutData: css`
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
 		`,
 		navigate: css`
 			display: flex;
 			gap: 0.3rem;
 			justify-content: center;
 		`,
-		nutritionOverviewContainer: css`
-			display: flex;
-			flex-direction: column;
-			justify-content: space-between;
-			gap: 1rem;
-			background-color: whitesmoke;
-			width: 30rem;
-			padding: 1.5rem;
-			border-radius: 8px;
-			${mq2} {
-				align-items: center;
-				width: unset;
+		line: css`
+			width: 4px;
+			height: 95%;
+			background-color: black;
+			${mq1} {
+				display: none;
 			}
 		`,
 		displayCalorieLayout: css`
@@ -95,20 +154,18 @@ const Overview = () => {
 			align-items: center;
 		`,
 		displayCalories: css`
-			font-size: 28px;
-			${mq1} {
-				font-size: 24px;
-			}
+			font-size: 20px;
 		`,
 		button: css`
-			height: 2rem;
 			background-color: #7caafa;
-			border: 1px solid #ccc;
+			color: white;
+			border: none;
 			width: 8rem;
 			height: 3rem;
 			font-size: 16px;
 			border-radius: 5px;
 			transition: 0.3s;
+			box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 			&:hover {
 				cursor: pointer;
 				background-color: #4f8efb;
@@ -116,6 +173,7 @@ const Overview = () => {
 		`,
 		buttonLayout: css`
 			display: flex;
+			justify-content: flex-start;
 			align-items: center;
 			gap: 1rem;
 		`,
@@ -148,51 +206,51 @@ const Overview = () => {
 	const [updateWorkoutTarget, setUpdateWorkoutTarget] = useState<string>('');
 
 	//get Workout Log from Firebase Database and store in monthlyWorkoutLog state
-	useEffect(() => {
-		const getWorkoutLogForTheMonth = async () => {
-			const auth = getAuth();
+	// useEffect(() => {
+	// 	const getWorkoutLogForTheMonth = async () => {
+	// 		const auth = getAuth();
 
-			const getCollectionWorkoutLog = collection(
-				db,
-				`users/${auth.currentUser!.uid}/workout-log`,
-			);
-			const q = query(
-				getCollectionWorkoutLog,
-				where('loggedDate', '>=', currentMonthAndYear),
-			);
-			const docSnap = (await getDocs(q)).size;
-			setMonthlyWorkoutLog(docSnap);
-		};
+	// 		const getCollectionWorkoutLog = collection(
+	// 			db,
+	// 			`users/${auth.currentUser!.uid}/workout-log`,
+	// 		);
+	// 		const q = query(
+	// 			getCollectionWorkoutLog,
+	// 			where('loggedDate', '>=', currentMonthAndYear),
+	// 		);
+	// 		const docSnap = (await getDocs(q)).size;
+	// 		setMonthlyWorkoutLog(docSnap);
+	// 	};
 
-		getWorkoutLogForTheMonth();
-	});
+	// 	getWorkoutLogForTheMonth();
+	// }, [currentMonthAndYear]);
 
-	//get Nutrition Log from Firebase Database and store in monthlyCalorieIntakeLog state
-	useEffect(() => {
-		const getCalorieIntakeForTheMonth = async () => {
-			const auth = getAuth();
+	// //get Nutrition Log from Firebase Database and store in monthlyCalorieIntakeLog state
+	// useEffect(() => {
+	// 	const getCalorieIntakeForTheMonth = async () => {
+	// 		const auth = getAuth();
 
-			const getCollectionWorkoutLog = collection(
-				db,
-				`users/${auth.currentUser!.uid}/nutrition-log`,
-			);
-			const q = query(
-				getCollectionWorkoutLog,
-				where('loggedDate', '>=', currentMonthAndYear),
-			);
-			const docSnap = await getDocs(q);
+	// 		const getCollectionWorkoutLog = collection(
+	// 			db,
+	// 			`users/${auth.currentUser!.uid}/nutrition-log`,
+	// 		);
+	// 		const q = query(
+	// 			getCollectionWorkoutLog,
+	// 			where('loggedDate', '>=', currentMonthAndYear),
+	// 		);
+	// 		const docSnap = await getDocs(q);
 
-			const docRef: DocumentData[] = [];
+	// 		const docRef: DocumentData[] = [];
 
-			docSnap.forEach(doc => {
-				docRef.push(doc.data().calories);
-			});
+	// 		docSnap.forEach(doc => {
+	// 			docRef.push(doc.data().calories);
+	// 		});
 
-			setMonthlyCalorieIntakeLog(docRef);
-		};
+	// 		setMonthlyCalorieIntakeLog(docRef);
+	// 	};
 
-		getCalorieIntakeForTheMonth();
-	});
+	// 	getCalorieIntakeForTheMonth();
+	// }, [currentMonthAndYear]);
 
 	//Calculates average Calorie intake for the month
 	useEffect(() => {
@@ -226,15 +284,38 @@ const Overview = () => {
 
 	return (
 		<div>
-			<ProfileSideBar currentState='overview' />
+			<div css={styles.sideBar}>
+				<ProfileSideBar currentState='overview' />
+			</div>
 			<div css={styles.container}>
 				<div css={styles.overview}>
-					<div css={styles.workoutOverviewContainer}>
-						<p css={styles.fontsize}>Workouts Completed This Month</p>
-						<ProgressBar
-							completedDays={monthlyWorkoutLog}
-							totalDays={workoutTarget}
-						/>
+					<div css={styles.overviewContainer}>
+						<p css={[styles.overviewLabel, styles.mediumFont]}>
+							Monthly Workouts
+						</p>
+						<div css={styles.workoutDataContainer}>
+							<ProgressBar
+								completedDays={monthlyWorkoutLog}
+								totalDays={workoutTarget}
+							/>
+							<hr css={styles.line} />
+							<div css={styles.dataLayout}>
+								<div css={styles.workoutData}>
+									<span css={styles.largeFont}>12</span>
+									<span css={styles.smallFont}>Workouts Completed</span>
+								</div>
+								<div css={styles.workoutData}>
+									<span css={styles.largeFont}>18</span>
+									<span css={styles.smallFont}>
+										Workouts Completed Last Month
+									</span>
+								</div>
+								<div css={styles.workoutData}>
+									<span css={styles.largeFont}>22</span>
+									<span css={styles.smallFont}>Total Workouts/Month</span>
+								</div>
+							</div>
+						</div>
 						<div css={styles.buttonLayout}>
 							<button
 								css={styles.button}
@@ -243,7 +324,7 @@ const Overview = () => {
 								Log A Workout
 							</button>
 							<button css={styles.button} onClick={() => setPopup(true)}>
-								Change Total Workouts
+								Set Total Workouts
 							</button>
 							{popup && (
 								<div css={styles.popup}>
@@ -264,21 +345,29 @@ const Overview = () => {
 							)}
 						</div>
 					</div>
-					<div css={styles.nutritionOverviewContainer}>
-						<p css={styles.fontsize}>Average Calorie Intake This Month</p>
-						<div css={styles.displayCalorieLayout}>
-							<p
-								css={
-									averageCalorieIntake > calorieTarget
-										? [styles.displayCalories, styles.red]
-										: [styles.displayCalories, styles.green]
-								}
-							>
-								Average Per Day : {averageCalorieIntake} Calories
-							</p>
-							<p css={styles.displayCalories}>
-								Target Per Day: {calorieTarget} Calories
-							</p>
+					<hr css={styles.line} />
+					<div css={styles.overviewContainer}>
+						<p css={[styles.overviewLabel, styles.mediumFont]}>
+							Monthly Calorie Intake
+						</p>
+
+						<div css={[styles.dataLayout, styles.alignment]}>
+							<div css={styles.workoutData}>
+								<span
+									css={
+										averageCalorieIntake > calorieTarget
+											? [styles.largeFont, styles.red]
+											: [styles.largeFont, styles.green]
+									}
+								>
+									{averageCalorieIntake} Calories
+								</span>
+								<span css={styles.smallFont}>Average Calories/Day</span>
+							</div>
+							<div css={styles.workoutData}>
+								<span css={styles.largeFont}>{calorieTarget} Calories</span>
+								<span css={styles.smallFont}>Target Calories/Day</span>
+							</div>
 							{averageCalorieIntake > calorieTarget && (
 								<div css={styles.red}>You're Eating Too Many Calories/Day!</div>
 							)}

@@ -9,6 +9,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { db } from '../../firebase.config';
+import { usePopup } from '../../hooks/usePopup';
 
 interface Data {
 	name: string;
@@ -18,7 +19,7 @@ interface Data {
 			quantity: number;
 			unit: string;
 		};
-		SUGAR: {
+		SUGAR?: {
 			quantity: number;
 			unit: string;
 		};
@@ -45,7 +46,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 	const styles = {
 		h1: css`
 			font-size: 32px;
-			text-decoration: underline;
+			font-weight: 600;
 			${mq2} {
 				font-size: 30px;
 			}
@@ -60,36 +61,54 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 		`,
 		h3: css`
 			font-size: 18px;
+			max-width: 6em;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			height: 1.5rem;
 			${mq2} {
+				height: 1rem;
 				font-size: 14px;
+				max-width: 3rem;
 			}
 		`,
 		displayDataContainer: css`
 			display: flex;
+			align-items: flex-start;
 			flex-direction: column;
 			gap: 2rem;
+			border: 2px solid #eeedf3;
+			border-radius: 6px;
+			background-color: white;
+			padding: 2rem;
+			max-width: 600px;
+			width: 100%;
+			${mq2} {
+				border: none;
+				padding: 1rem;
+			}
 		`,
 		dataContainer: css`
 			display: flex;
-			gap: 2.5rem;
-			padding-left: 2.5rem;
-			${mq2} {
-				padding-left: 0;
-				gap: 1rem;
-			}
 		`,
 		dataStructure: css`
 			display: flex;
 			flex-direction: column;
 			align-items: center;
+			border: 1px solid black;
 			gap: 2rem;
+			padding: 1rem;
+			${mq2} {
+				padding: 0.5rem;
+				max-width: 75px;
+			}
 		`,
 		total: css`
 			display: flex;
 			justify-content: center;
 			width: 100%;
 			border-top: 2px solid black;
-			padding-top: 2rem;
+			padding-top: 0.5rem;
 			margin-top: -1rem;
 			font-size: 18px;
 			${mq2} {
@@ -99,6 +118,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 		button: css`
 			height: 2rem;
 			background-color: #7caafa;
+			color: white;
 			border: 1px solid #ccc;
 			width: 10rem;
 			height: 3rem;
@@ -110,19 +130,40 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 				background-color: #4f8efb;
 			}
 		`,
+		popupContainer: css`
+			position: relative;
+		`,
+		popup: css`
+			position: absolute;
+			left: 1rem;
+			padding: 1rem;
+			width: 20rem;
+			background-color: whitesmoke;
+			font-size: 16px;
+			line-height: 1.2rem;
+			z-index: 10;
+			${mq2} {
+				left: -20rem;
+			}
+		`,
 	};
 
 	let totalCalories = 0;
 	let totalProtein = 0;
 	let totalFat = 0;
 	let totalSugar = 0;
+	const { popup, setPopup } = usePopup();
 
 	//Get total for all nutritional information
 	dataRecieved.forEach(data => {
 		totalCalories += data.calories;
 		totalFat += data.totalNutrients.FAT.quantity;
 		totalProtein += data.totalNutrients.PROCNT.quantity;
-		totalSugar += data.totalNutrients.SUGAR.quantity;
+
+		if (data.totalNutrients.SUGAR?.quantity === undefined) {
+			return;
+		}
+		totalSugar += data.totalNutrients.SUGAR!.quantity;
 	});
 
 	const [addDataToLog, setAddDataToLog] = useState<LogData>({
@@ -147,7 +188,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 				data.totalNutrients.PROCNT.quantity,
 			)}g protein, ${Math.round(
 				data.totalNutrients.FAT.quantity,
-			)}g fat, ${Math.round(data.totalNutrients.SUGAR.quantity)}g sugar`;
+			)}g fat, ${Math.round(data.totalNutrients.SUGAR!.quantity)}g sugar`;
 		});
 
 		const calories = dataRecieved.map(data => {
@@ -178,56 +219,58 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 
 	return (
 		<div css={styles.displayDataContainer}>
-			<h1 css={styles.h1}> Nutritional Info Results</h1>
+			<h1 css={styles.h1}>Nutrition Results</h1>
 
 			<div css={styles.dataContainer}>
 				<div css={styles.dataStructure}>
 					<h2 css={styles.h2}>Ingridents</h2>
 					{dataRecieved.map(data => (
-						<div css={styles.h3} key={data.name}>
-							{data.name} :
-						</div>
+						<span css={styles.h3} key={data.name}>
+							{data.name}
+						</span>
 					))}
-					<div css={styles.total}>Total :</div>
+					<span css={styles.total}>Total :</span>
 				</div>
 				<div css={styles.dataStructure}>
 					<h2 css={styles.h2}>Calories</h2>
 					{dataRecieved.map(data => (
-						<div css={styles.h3} key={data.calories}>
+						<span css={styles.h3} key={data.calories}>
 							{data.calories}
-						</div>
+						</span>
 					))}
-					<div css={styles.total}>{Math.round(totalCalories)}</div>
+					<span css={styles.total}>{Math.round(totalCalories)}</span>
 				</div>
 				<div css={styles.dataStructure}>
 					<h2 css={styles.h2}>Protein</h2>
 					{dataRecieved.map(data => (
-						<div css={styles.h3} key={data.totalNutrients.PROCNT.quantity}>
+						<span css={styles.h3} key={data.totalNutrients.PROCNT.quantity}>
 							{Math.round(data.totalNutrients.PROCNT.quantity)}
 							{data.totalNutrients.PROCNT.unit}
-						</div>
+						</span>
 					))}
-					<div css={styles.total}>{Math.round(totalProtein)}g</div>
+					<span css={styles.total}>{Math.round(totalProtein)}g</span>
 				</div>
 				<div css={styles.dataStructure}>
 					<h2 css={styles.h2}>Fat</h2>
 					{dataRecieved.map(data => (
-						<div css={styles.h3} key={data.totalNutrients.FAT.quantity}>
+						<span css={styles.h3} key={data.totalNutrients.FAT.quantity}>
 							{Math.round(data.totalNutrients.FAT.quantity)}
 							{data.totalNutrients.FAT.unit}
-						</div>
+						</span>
 					))}
-					<div css={styles.total}>{Math.round(totalFat)}g</div>
+					<span css={styles.total}>{Math.round(totalFat)}g</span>
 				</div>
 				<div css={styles.dataStructure}>
 					<h2 css={styles.h2}>Sugar</h2>
 					{dataRecieved.map(data => (
-						<div css={styles.h3} key={data.totalNutrients.SUGAR.quantity}>
-							{Math.round(data.totalNutrients.SUGAR.quantity)}
-							{data.totalNutrients.SUGAR.unit}
-						</div>
+						<span css={styles.h3} key={data.totalNutrients.SUGAR!.quantity}>
+							{data.totalNutrients.SUGAR?.quantity === undefined
+								? '0g'
+								: Math.round(data.totalNutrients.SUGAR!.quantity)}
+							{data.totalNutrients.SUGAR!.unit}
+						</span>
 					))}
-					<div css={styles.total}>{Math.round(totalSugar)}g</div>
+					<span css={styles.total}>{Math.round(totalSugar)}g</span>
 				</div>
 			</div>
 			{dataRecieved.length > 0 && (
@@ -235,6 +278,19 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 					Add to Nutrition Log
 				</button>
 			)}
+			<div
+				css={styles.popupContainer}
+				onMouseOverCapture={() => setPopup(true)}
+				onMouseOutCapture={() => setPopup(false)}
+			>
+				<span>Missing results?</span>
+				{popup && (
+					<p css={styles.popup}>
+						Please check your spelling. Otherwise, the missing ingredient is
+						currently not in our database.
+					</p>
+				)}
+			</div>
 		</div>
 	);
 };

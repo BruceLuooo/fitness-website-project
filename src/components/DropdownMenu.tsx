@@ -20,11 +20,6 @@ const DropdownMenu: FunctionComponent<Props> = ({
 	const mq2 = `@media screen and (max-width: 768px)`;
 
 	const styles = {
-		dropdownContainer: css`
-			position: relative;
-			width: 50%;
-			background-color: white;
-		`,
 		dropdownInput: css`
 			padding: 5px;
 			display: flex;
@@ -49,15 +44,15 @@ const DropdownMenu: FunctionComponent<Props> = ({
 			background-color: white;
 			z-index: 10;
 			${mq1} {
-				width: 11.5rem;
+				width: 14rem;
 			}
 			${mq2} {
-				width: 10rem;
+				width: 17rem;
 			}
 		`,
 		dropdownitem: css`
 			padding: 5px;
-			font-size: 18px;
+			font-size: 16px;
 			cursor: pointer;
 			&:hover {
 				background-color: #9fc3f870;
@@ -69,18 +64,16 @@ const DropdownMenu: FunctionComponent<Props> = ({
 	};
 
 	return (
-		<div css={styles.dropdownContainer}>
-			<div css={styles.dropdownMenu}>
-				{selectOptions.map((option: any, index) => (
-					<div
-						key={index}
-						css={styles.dropdownitem}
-						onClick={() => onSelectedOption(option.label, option.value)}
-					>
-						{option.label}
-					</div>
-				))}
-			</div>
+		<div css={styles.dropdownMenu}>
+			{selectOptions.map((option: any, index) => (
+				<div
+					key={index}
+					css={styles.dropdownitem}
+					onClick={() => onSelectedOption(option.label, option.value)}
+				>
+					{option.label}
+				</div>
+			))}
 		</div>
 	);
 };

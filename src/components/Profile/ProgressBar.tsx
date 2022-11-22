@@ -15,8 +15,9 @@ const ProgressBar: FC<Props> = ({ totalDays, completedDays }) => {
 	const styles = {
 		container: css`
 			position: relative;
+			width: 15rem;
 			${mq2} {
-				width: 23rem;
+				width: 12rem;
 			}
 		`,
 	};

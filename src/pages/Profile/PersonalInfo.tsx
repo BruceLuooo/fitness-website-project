@@ -10,23 +10,30 @@ import {
 } from 'firebase/auth';
 import { doc, DocumentData, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase.config';
-import ProfileSideBar from '../../components/Profile/ProfileSideBar';
 import show from '../../assets/showPassword.png';
 import hide from '../../assets/hidePassword.png';
 
 const PersonalInfo = () => {
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
 		container: css`
 			display: flex;
 			flex-direction: column;
-			padding: 5rem;
+			padding: 4rem;
 			gap: 2rem;
-			border: 1px solid lightgray;
-			border-radius: 4px;
+			background-color: white;
+			margin: 1rem;
+			border-radius: 6px;
+			box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+				0 10px 10px rgba(0, 0, 0, 0.22);
+			${mq2} {
+				margin: 0.3rem;
+			}
 		`,
-		logoFont: css`
-			color: black;
+		mediumFont: css`
 			font-size: 30px;
+			font-weight: 600;
 		`,
 		formContainer: css`
 			display: flex;
@@ -56,15 +63,18 @@ const PersonalInfo = () => {
 			color: #18dc18;
 		`,
 		button: css`
+			height: 3rem;
 			font-size: 16px;
 			padding: 0.5rem 1rem;
-			background-color: white;
-			border: 1px solid lightgray;
+			background-color: #7caafa;
+			color: white;
+			border: none;
 			border-radius: 4px;
 			transition: 0.2s;
+			box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 			&:hover {
 				cursor: pointer;
-				background-color: #cecece;
+				background-color: #4f8efb;
 			}
 		`,
 		showPassword: css`
@@ -91,28 +101,28 @@ const PersonalInfo = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [popupMessage, setPopupMessage] = useState({ type: '', message: '' });
 
-	useEffect(() => {
-		const fetchUserData = async () => {
-			const docRef = doc(db, 'users', auth.currentUser!.uid);
-			const docSnap = await getDoc(docRef);
+	// useEffect(() => {
+	// 	const fetchUserData = async () => {
+	// 		const docRef = doc(db, 'users', auth.currentUser!.uid);
+	// 		const docSnap = await getDoc(docRef);
 
-			if (docSnap.exists()) {
-				const data = docSnap.data();
+	// 		if (docSnap.exists()) {
+	// 			const data = docSnap.data();
 
-				setUserInfo({
-					name: data.name,
-					lastname: data.lastname,
-					email: data.email,
-					password: data.password,
-					workoutsPerMonth: data.workoutsPerMonth,
-					caloriesPerDay: data.caloriesPerDay,
-				});
+	// 			setUserInfo({
+	// 				name: data.name,
+	// 				lastname: data.lastname,
+	// 				email: data.email,
+	// 				password: data.password,
+	// 				workoutsPerMonth: data.workoutsPerMonth,
+	// 				caloriesPerDay: data.caloriesPerDay,
+	// 			});
 
-				setOldUserInfo({ email: data.email, password: data.password });
-			}
-		};
-		fetchUserData();
-	}, []);
+	// 			setOldUserInfo({ email: data.email, password: data.password });
+	// 		}
+	// 	};
+	// 	fetchUserData();
+	// }, [auth.currentUser]);
 
 	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setUserInfo(prev => ({
@@ -162,7 +172,7 @@ const PersonalInfo = () => {
 	return (
 		<div>
 			<div css={styles.container}>
-				<div css={styles.logoFont}>My Profile</div>
+				<div css={styles.mediumFont}>Edit Profile</div>
 				<form css={styles.formContainer} onSubmit={onSubmit}>
 					<div css={styles.input}>
 						<label htmlFor='name'>Name</label>
@@ -192,6 +202,7 @@ const PersonalInfo = () => {
 							type='text'
 							value={userInfo.email}
 							onChange={onChange}
+							disabled={userInfo.email === 'bruceluo@gmail.com' ? true : false}
 						/>
 					</div>
 					<div css={styles.input}>
@@ -202,6 +213,7 @@ const PersonalInfo = () => {
 							type={showPassword ? 'text' : 'password'}
 							value={userInfo.password}
 							onChange={onChange}
+							disabled={userInfo.password === 'bruceluo' ? true : false}
 						/>
 						<img
 							src={showPassword ? show : hide}

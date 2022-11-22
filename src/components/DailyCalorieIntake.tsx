@@ -26,21 +26,27 @@ const DailyCalorieIntake = () => {
 		container: css`
 			display: flex;
 			flex-direction: column;
+			align-items: flex-start;
 			gap: 2.5rem;
-			background-color: whitesmoke;
-			padding: 1.5rem 10rem;
-			${mq1} {
-				padding: 1.5rem 5rem;
-			}
-			${mq1} {
-				padding: 1.5rem 2rem;
+			padding: 3rem;
+			margin: 0 1rem 1rem;
+			background-color: white;
+			box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+				0 10px 10px rgba(0, 0, 0, 0.22);
+			border-radius: 6px;
+			height: 100%;
+			max-width: 44rem;
+			width: 100%;
+			${mq2} {
+				padding: 1rem;
+				width: unset;
 			}
 		`,
 		header: css`
 			display: flex;
 			align-items: center;
-			justify-content: center;
 			min-width: 20rem;
+			font-weight: 600;
 			gap: 1rem;
 		`,
 		title: css`
@@ -49,42 +55,64 @@ const DailyCalorieIntake = () => {
 				font-size: 26px;
 			}
 			${mq2} {
-				font-size: 20px;
+				font-size: 24px;
 			}
 		`,
 		label: css`
 			font-size: 20px;
+			width: 10rem;
 			${mq2} {
 				font-size: 16px;
+			}
+		`,
+		label2: css`
+			font-size: 20px;
+			${mq2} {
+				font-size: 18px;
 			}
 		`,
 		formContainer: css`
 			display: flex;
 			flex-direction: column;
-			min-width: 20rem;
-			width: 50%;
+			max-width: 28rem;
+			width: 100%;
+			padding: 2rem;
 			gap: 1rem;
+			border: 2px solid #eeedf3;
+			border-radius: 6px;
+			${mq2} {
+				padding: 1.5rem 0.5rem;
+				max-width: 19rem;
+			}
 		`,
 		formInput: css`
 			display: flex;
 			align-items: center;
+			gap: 1rem;
 			justify-content: space-between;
 		`,
 		dropdownContainer: css`
+			display: flex;
+			justify-content: flex-end;
 			position: relative;
-			width: 50%;
-			background-color: white;
+			width: 100%;
 		`,
 		dropdownInput: css`
 			padding: 5px;
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
+			background-color: white;
 			user-select: none;
 			border: 1px solid #ccc;
 			border-radius: 5px;
-			text-align: left;
+			max-width: 10.5rem;
 			width: 100%;
+		`,
+		activityLabel: css`
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		`,
 		dropdownMenu: css`
 			position: absolute;
@@ -107,14 +135,16 @@ const DailyCalorieIntake = () => {
 			width: 16px;
 		`,
 		button: css`
-			height: 2rem;
 			background-color: #7caafa;
-			border: 1px solid #ccc;
-			width: 8rem;
-			height: 3rem;
-			font-size: 16px;
-			border-radius: 5px;
+			color: white;
+			border: none;
+			width: 6rem;
+			height: 2.5rem;
+			font-size: 14px;
+			border-radius: 6px;
 			transition: 0.3s;
+			box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+
 			&:hover {
 				cursor: pointer;
 				background-color: #4f8efb;
@@ -135,9 +165,8 @@ const DailyCalorieIntake = () => {
 			left: 1rem;
 			padding: 1rem;
 			width: 20rem;
-			background-color: white;
+			background-color: whitesmoke;
 			font-size: 16px;
-			letter-spacing: 1px;
 			line-height: 1.2rem;
 			z-index: 10;
 			${mq2} {
@@ -146,13 +175,10 @@ const DailyCalorieIntake = () => {
 		`,
 		formAndResultsContainer: css`
 			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			gap: 4rem;
-			${mq2} {
+			gap: 2rem;
+			${mq1} {
 				flex-direction: column;
 				align-items: unset;
-				gap: 2rem;
 			}
 		`,
 
@@ -161,9 +187,6 @@ const DailyCalorieIntake = () => {
 			flex-direction: column;
 			align-items: center;
 			gap: 1rem;
-			${mq2} {
-				flex-direction: row;
-			}
 		`,
 		updateCalorieMessage: css`
 			display: flex;
@@ -172,17 +195,27 @@ const DailyCalorieIntake = () => {
 			font-size: 20px;
 		`,
 		results: css`
-			width: 20rem;
-			height: 6rem;
-			font-size: 18px;
+			max-width: 22rem;
+			width: 100%;
+			height: 5rem;
+			font-size: 16px;
 			${mq1} {
 				width: 15rem;
 			}
 			${mq2} {
-				height: 6rem;
+				width: 6.5rem;
+				height: 5rem;
 				font-size: 14px;
-				letter-spacing: 1.2px;
 				word-spacing: 1px;
+			}
+		`,
+		buttonContainer: css`
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+			${mq2} {
+				flex-direction: row;
+				gap: 0.5rem;
 			}
 		`,
 	};
@@ -195,7 +228,7 @@ const DailyCalorieIntake = () => {
 		const handler = () => setOpenMenu(false);
 
 		window.addEventListener('click', handler);
-	});
+	}, []);
 
 	const selectOptions = [
 		{ label: 'Lightly active: Exercise 1-3 times/week', value: 1.375 },
@@ -305,7 +338,7 @@ const DailyCalorieIntake = () => {
 	return (
 		<div css={styles.container}>
 			<div css={styles.header}>
-				<div css={styles.title}>Calculate Your Daily Calorie Intake</div>
+				<div css={styles.title}>Set Your Daily Calorie Intake</div>
 				<div
 					css={styles.popupContainer}
 					onMouseOverCapture={() => setPopup(true)}
@@ -375,7 +408,7 @@ const DailyCalorieIntake = () => {
 
 						<div css={styles.dropdownContainer}>
 							<div css={styles.dropdownInput} onClick={onClick}>
-								<div>
+								<div css={styles.activityLabel}>
 									{data.activity.label === '' ? '' : `${data.activity.label}`}
 								</div>
 								<img src={DownArrow} alt='' css={styles.icon} />
@@ -395,25 +428,31 @@ const DailyCalorieIntake = () => {
 				</form>
 				{calorieIntake > 0 && updateCalories.active === false && (
 					<div css={styles.updateDailyCalorieIntake}>
-						<p css={styles.label}>Set Daily Calorie Intake Target</p>
-						<button
-							css={[styles.button, styles.results]}
-							onClick={e => updateMonthlyCalorieIntake(e, calorieIntake + 500)}
-						>
-							Gain weight (~ 1lbs/week): {calorieIntake + 500} Calories
-						</button>
-						<button
-							css={[styles.button, styles.results]}
-							onClick={e => updateMonthlyCalorieIntake(e, calorieIntake)}
-						>
-							Maintain weight: {calorieIntake} Calories
-						</button>
-						<button
-							css={[styles.button, styles.results]}
-							onClick={e => updateMonthlyCalorieIntake(e, calorieIntake - 500)}
-						>
-							Lose weight (~ 1lbs/week): {calorieIntake - 500} Calories
-						</button>
+						<p css={styles.label2}>Set Daily Calorie Intake Target</p>
+						<div css={styles.buttonContainer}>
+							<button
+								css={[styles.button, styles.results]}
+								onClick={e =>
+									updateMonthlyCalorieIntake(e, calorieIntake + 500)
+								}
+							>
+								Gain weight (~ 1lbs/week): {calorieIntake + 500} Calories
+							</button>
+							<button
+								css={[styles.button, styles.results]}
+								onClick={e => updateMonthlyCalorieIntake(e, calorieIntake)}
+							>
+								Maintain weight: {calorieIntake} Calories
+							</button>
+							<button
+								css={[styles.button, styles.results]}
+								onClick={e =>
+									updateMonthlyCalorieIntake(e, calorieIntake - 500)
+								}
+							>
+								Lose weight (~ 1lbs/week): {calorieIntake - 500} Calories
+							</button>
+						</div>
 					</div>
 				)}
 				{updateCalories.active === true && (

@@ -1,13 +1,11 @@
 import { getAuth } from 'firebase/auth';
 import {
 	collection,
-	DocumentData,
 	getDocs,
 	limit,
 	orderBy,
 	query,
 	startAfter,
-	startAt,
 } from 'firebase/firestore';
 import { db } from '../firebase.config';
 
@@ -18,6 +16,11 @@ interface LogWorkout {
 }
 
 const useChangePageFitnessLog = () => {
+	const convertDate = (timeStamp: Date) => {
+		let date = new Date(timeStamp);
+		return `${date.toDateString()} ${date.toLocaleTimeString()}`;
+	};
+
 	const nextPage = async (currentPage: number, log: string) => {
 		const auth = getAuth();
 		const getCollection = collection(
@@ -50,7 +53,7 @@ const useChangePageFitnessLog = () => {
 		result.forEach(doc => {
 			return nutritionLogRef.push({
 				name: doc.data().name,
-				loggedDate: `${doc.data().loggedDate.toDate()}`,
+				loggedDate: convertDate(doc.data().loggedDate.toDate()),
 				note: doc.data().note,
 			});
 		});
@@ -81,7 +84,7 @@ const useChangePageFitnessLog = () => {
 			docSnap.forEach(doc => {
 				return nutritionLogRef.push({
 					name: doc.data().name,
-					loggedDate: `${doc.data().loggedDate.toDate()}`,
+					loggedDate: convertDate(doc.data().loggedDate.toDate()),
 					note: doc.data().note,
 				});
 			});
@@ -112,7 +115,7 @@ const useChangePageFitnessLog = () => {
 		test.forEach(doc => {
 			return nutritionLogRef.push({
 				name: doc.data().name,
-				loggedDate: `${doc.data().loggedDate.toDate()}`,
+				loggedDate: convertDate(doc.data().loggedDate.toDate()),
 				note: doc.data().note,
 			});
 		});

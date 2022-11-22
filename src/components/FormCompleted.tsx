@@ -12,7 +12,7 @@ const FormCompleted: FC<Props> = ({ setSucessfulPopup, text }) => {
 	const mq1 = `@media screen and (max-width: 1283px)`;
 	const mq2 = `@media screen and (max-width: 768px)`;
 	const navigate = useNavigate();
-	const token = localStorage.getItem('token');
+	const token = sessionStorage.getItem('token');
 
 	const styles = {
 		container: css`
@@ -20,6 +20,8 @@ const FormCompleted: FC<Props> = ({ setSucessfulPopup, text }) => {
 			flex-direction: column;
 			min-width: 10rem;
 			justify-content: center;
+			border: 1px solid black;
+			padding: 1rem;
 			${mq1} {
 				width: 30rem;
 			}
@@ -40,6 +42,7 @@ const FormCompleted: FC<Props> = ({ setSucessfulPopup, text }) => {
 			height: 2rem;
 			background-color: #7caafa;
 			border: 1px solid #ccc;
+			color: white;
 			width: 12rem;
 			height: 3rem;
 			font-size: 18px;

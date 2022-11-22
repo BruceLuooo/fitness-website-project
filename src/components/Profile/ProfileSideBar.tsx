@@ -1,48 +1,62 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import overview from '../../assets/overview.png';
+import nutrition from '../../assets/nutrition.png';
+import fitness from '../../assets/fitness.png';
 
 interface props {
 	currentState: string;
 }
 
 const ProfileSideBar = ({ currentState }: props) => {
+	const mq1 = `@media screen and (max-width: 1283px)`;
+	const mq2 = `@media screen and (max-width: 768px)`;
+
 	const styles = {
 		container: css`
 			display: flex;
 			justify-content: center;
-			align-items: center;
-			max-width: 50rem;
-			margin: auto;
+			gap: 1rem;
+			border-radius: 6px;
 		`,
 		sidebarDirectory: css`
 			display: flex;
-			width: 100%;
-			align-items: center;
 			justify-content: center;
+			align-items: center;
+			width: 25%;
+			gap: 0.5rem;
 			height: 3rem;
-			background-color: white;
-			border-radius: 4px;
 		`,
 		sidebarDirectorySelected: css`
-			border: 1px solid blue;
-			background-color: whitesmoke;
+			background-color: #7caafa;
+			border-radius: 6px;
+			${mq2} {
+				border: 2px solid #7caafa;
+			}
 		`,
 		button: css`
-			font-size: 16px;
-			width: 100%;
-			height: 100%;
+			font-size: 20px;
 			border: none;
 			background: none;
 			&:hover {
 				cursor: pointer;
 			}
+			${mq1} {
+				font-size: 18px;
+			}
+		`,
+		icons: css`
+			width: 20px;
+			height: 20px;
+			${mq2} {
+				display: none;
+			}
 		`,
 	};
 
 	const navigate = useNavigate();
-	const [selected, setSelected] = useState(currentState);
+	let selected = currentState;
 
 	const handleClick = (e: any) => {
 		navigate(`/profile/${e.target.value}`);
@@ -57,6 +71,7 @@ const ProfileSideBar = ({ currentState }: props) => {
 						: styles.sidebarDirectory
 				}
 			>
+				<img src={overview} alt='overview' css={styles.icons} />
 				<button
 					css={styles.button}
 					id='overview'
@@ -73,6 +88,7 @@ const ProfileSideBar = ({ currentState }: props) => {
 						: styles.sidebarDirectory
 				}
 			>
+				<img src={nutrition} alt='nutrition' css={styles.icons} />
 				<button
 					css={styles.button}
 					id='overview'
@@ -89,6 +105,7 @@ const ProfileSideBar = ({ currentState }: props) => {
 						: styles.sidebarDirectory
 				}
 			>
+				<img src={fitness} alt='fitness' css={styles.icons} />
 				<button
 					css={styles.button}
 					id='overview'

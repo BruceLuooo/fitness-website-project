@@ -9,6 +9,8 @@ import CreateWorkoutPlan from './CreateWorkoutPlan';
 import Strength from '../../assets/svg/strength.svg';
 import Cardio from '../../assets/svg/cardio.svg';
 import FormCompleted from '../FormCompleted';
+import useDelay from '../../hooks/useDelay';
+import LoadingSpinner from '../LoadingSpinner';
 
 interface SearchQuery {
 	search: string;
@@ -41,48 +43,49 @@ const SearchExercises = () => {
 		mainContainer: css`
 			display: flex;
 			flex-direction: column;
-			margin-top: 8rem;
-			padding: 2rem;
+			margin: auto;
+			padding: 3rem;
 			gap: 2rem;
-			background-color: whitesmoke;
-			min-width: 75rem;
+			max-width: 100rem;
+			width: 100%;
+			height: 42rem;
+			background-color: white;
+			margin: 0rem 1rem 1rem;
+			border-radius: 6px;
+			box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+				0 10px 10px rgba(0, 0, 0, 0.22);
 			${mq1} {
-				min-width: 45rem;
+				max-width: 60rem;
+				width: unset;
 				align-items: center;
-			}
-			${mq2} {
-				min-width: 320px;
-				align-items: unset;
+				height: unset;
 			}
 		`,
 		searchContainer: css`
 			display: flex;
-			justify-content: space-around;
-			gap: 2rem;
+			margin-left: 5rem;
+			margin-top: 2rem;
+			gap: 4rem;
 			${mq1} {
 				flex-direction: column;
+				margin-left: unset;
 			}
 		`,
 		header: css`
-			font-size: 50px;
+			font-size: 40px;
+			font-weight: 600;
 			${mq1} {
 				font-size: 50px;
 			}
 			${mq2} {
-				font-size: 36px;
+				font-size: 34px;
 			}
 		`,
 		h2: css`
-			font-size: 18px;
-			${mq2} {
-				font-size: 16px;
-			}
+			font-size: 16px;
 		`,
 		label: css`
-			font-size: 18px;
-			${mq1} {
-				font-size: 16px;
-			}
+			font-size: 16px;
 		`,
 		searchQuery: css`
 			display: flex;
@@ -91,16 +94,6 @@ const SearchExercises = () => {
 			margin: 0.7rem 0;
 			${mq1} {
 				min-width: 4rem;
-			}
-		`,
-		searchInput: css`
-			height: 1.8rem;
-			font-size: 18px;
-			padding: 16px 6px;
-			border: 1px solid #ccc;
-			border-radius: 5px;
-			${mq2} {
-				font-size: 16px;
 			}
 		`,
 		dropdownInput: css`
@@ -119,7 +112,8 @@ const SearchExercises = () => {
 			background-color: white;
 			border-radius: 5px;
 			text-align: left;
-			min-width: 10rem;
+			/* max-width: 10rem; */
+			width: 100%;
 			${mq2} {
 				min-width: 1rem;
 			}
@@ -131,7 +125,8 @@ const SearchExercises = () => {
 			display: flex;
 			flex-direction: column;
 			gap: 1rem;
-			min-width: 20rem;
+			max-width: 14rem;
+			width: 100%;
 			${mq1} {
 				min-width: 10rem;
 			}
@@ -142,7 +137,8 @@ const SearchExercises = () => {
 		search: css`
 			display: flex;
 			flex-direction: column;
-			gap: 1.5rem;
+			justify-content: center;
+			gap: 1rem;
 			${mq1} {
 				flex-direction: row;
 				align-items: center;
@@ -154,12 +150,12 @@ const SearchExercises = () => {
 			}
 		`,
 		findExerciseButton: css`
-			height: 2rem;
 			background-color: #7caafa;
-			border: 1px solid #ccc;
-			width: 10rem;
+			border: 1px solid white;
+			width: 8rem;
 			height: 3rem;
-			font-size: 18px;
+			font-size: 16px;
+			color: white;
 			border-radius: 5px;
 			transition: 0.3s;
 			&:hover {
@@ -202,7 +198,7 @@ const SearchExercises = () => {
 			padding: 1rem;
 			margin: 1rem 0;
 			background-color: white;
-			border: 1px solid black;
+			border: 1px solid #7caafa;
 			border-radius: 5px;
 			min-width: 2rem;
 			gap: 1rem;
@@ -233,6 +229,7 @@ const SearchExercises = () => {
 		`,
 	};
 
+	const { loading, setLoading } = useDelay();
 	const { error, setError } = useError();
 
 	const typeOfExercises = [
@@ -260,7 +257,7 @@ const SearchExercises = () => {
 		const handler = () => setOpenMenu(0);
 
 		window.addEventListener('click', handler);
-	});
+	}, []);
 
 	const [searchQuery, setSearchQuery] = useState<SearchQuery>({
 		search: '',
@@ -310,6 +307,8 @@ const SearchExercises = () => {
 	// API get request with information from seaerchQuery State. Data then stored into data State
 	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+
+		setLoading(true);
 		setData([]);
 
 		const config = {
@@ -342,8 +341,10 @@ const SearchExercises = () => {
 
 		if (data.length === 0) {
 			setError({ active: true, message: 'No Workout Found' });
+			setLoading(false);
 		} else {
 			setError({ active: false, message: '' });
+			setLoading(false);
 		}
 	};
 
@@ -353,6 +354,12 @@ const SearchExercises = () => {
 		data: Data,
 		index: number,
 	) => {
+		const alreadySelected = workoutPlan.filter(
+			workout => workout.name === data.name,
+		);
+
+		if (alreadySelected.length >= 1) return;
+
 		setWorkoutPlan(prev => [
 			...prev,
 			{
@@ -369,19 +376,28 @@ const SearchExercises = () => {
 			<h1 css={styles.header}>Create A Workout Plan</h1>
 			<div css={styles.searchContainer}>
 				<form css={styles.formContainer} onSubmit={onSubmit}>
+					<span>Step 1: Search for workouts</span>
 					<div css={styles.search}>
 						<div css={styles.searchQuery}>
+							<label css={styles.label} htmlFor='muscleGroup'>
+								MuscleGroup
+							</label>
 							<div>
-								<label css={styles.label} htmlFor='search'>
-									Search (Optional)
-								</label>
+								<div css={styles.dropdownMenu} onClick={e => onClick(e, 2)}>
+									<span css={styles.dropdownInput}>
+										{searchQuery.muscleGroup === ''
+											? ''
+											: `${searchQuery.muscleGroup}`}
+									</span>
+									<img src={DownArrow} alt='' css={styles.icon} />
+								</div>
+								{openMenu === 2 && (
+									<DropdownMenu
+										selectOptions={muscleGroup}
+										onSelectedOption={onSelectedOption}
+									/>
+								)}
 							</div>
-							<input
-								css={styles.searchInput}
-								id='search'
-								type='text'
-								onChange={onChange}
-							/>
 						</div>
 						<div css={styles.searchQuery}>
 							<label css={styles.label} htmlFor='type'>
@@ -389,11 +405,11 @@ const SearchExercises = () => {
 							</label>
 							<div>
 								<div css={styles.dropdownMenu} onClick={e => onClick(e, 1)}>
-									<div css={styles.dropdownInput}>
+									<span css={styles.dropdownInput}>
 										{searchQuery.activity.label === ''
 											? ''
 											: `${searchQuery.activity.label}`}
-									</div>
+									</span>
 									<img src={DownArrow} alt='' css={styles.icon} />
 								</div>
 								{openMenu === 1 && (
@@ -405,25 +421,15 @@ const SearchExercises = () => {
 							</div>
 						</div>
 						<div css={styles.searchQuery}>
-							<label css={styles.label} htmlFor='muscleGroup'>
-								MuscleGroup (Optional)
+							<label css={styles.label} htmlFor='search'>
+								Search (Optional)
 							</label>
-							<div>
-								<div css={styles.dropdownMenu} onClick={e => onClick(e, 2)}>
-									<div css={styles.dropdownInput}>
-										{searchQuery.muscleGroup === ''
-											? ''
-											: `${searchQuery.muscleGroup}`}
-									</div>
-									<img src={DownArrow} alt='' css={styles.icon} />
-								</div>
-								{openMenu === 2 && (
-									<DropdownMenu
-										selectOptions={muscleGroup}
-										onSelectedOption={onSelectedOption}
-									/>
-								)}
-							</div>
+							<input
+								css={styles.dropdownMenu}
+								id='search'
+								type='text'
+								onChange={onChange}
+							/>
 						</div>
 					</div>
 					<div css={styles.findExercise}>
@@ -433,32 +439,39 @@ const SearchExercises = () => {
 						</button>
 					</div>
 				</form>
-				<div css={styles.resultsContainer}>
-					{data.map((data, index) => (
-						<div key={data.name} css={styles.results}>
-							<div css={styles.displayDataSpace}>
-								<div css={styles.resultFound}>
-									<h1 css={styles.h2}>{data.name}</h1>
+				{loading ? (
+					<div css={styles.resultsContainer}>
+						<LoadingSpinner />
+					</div>
+				) : (
+					<div css={styles.resultsContainer}>
+						<span>Step 2: Select exercise to add </span>
+						{data.map((data, index) => (
+							<div key={data.name} css={styles.results}>
+								<div css={styles.displayDataSpace}>
+									<div css={styles.resultFound}>
+										<h1 css={styles.h2}>{data.name}</h1>
+									</div>
+									<div css={styles.resultFound}>
+										<img
+											css={styles.icon}
+											src={data.type === 'cardio' ? Cardio : Strength}
+											alt=''
+										/>
+										<div>{data.type}</div>
+									</div>
 								</div>
-								<div css={styles.resultFound}>
-									<img
-										css={styles.icon}
-										src={data.type === 'cardio' ? Cardio : Strength}
-										alt=''
-									/>
-									<div>{data.type}</div>
-								</div>
-							</div>
 
-							<button
-								css={[styles.findExerciseButton, styles.addToPlanButton]}
-								onClick={e => addToWorkoutPlan(e, data, index)}
-							>
-								Add to plan
-							</button>
-						</div>
-					))}
-				</div>
+								<button
+									css={[styles.findExerciseButton, styles.addToPlanButton]}
+									onClick={e => addToWorkoutPlan(e, data, index)}
+								>
+									Add to plan
+								</button>
+							</div>
+						))}
+					</div>
+				)}
 				{!successfulPopup ? (
 					<CreateWorkoutPlan
 						workoutPlan={workoutPlan}
