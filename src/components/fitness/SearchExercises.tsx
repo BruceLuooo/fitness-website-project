@@ -14,7 +14,7 @@ import LoadingSpinner from '../LoadingSpinner';
 
 interface SearchQuery {
 	search: string;
-	activity: { label: string };
+	activity: string;
 	muscleGroup: string;
 }
 
@@ -232,7 +232,7 @@ const SearchExercises = () => {
 	const { loading, setLoading } = useDelay();
 	const { error, setError } = useError();
 
-	const typeOfExercises = [
+	const typeOfTraining = [
 		{ label: 'Cardio' },
 		{ label: 'Plyometrics' },
 		{ label: 'Powerlifting' },
@@ -261,9 +261,7 @@ const SearchExercises = () => {
 
 	const [searchQuery, setSearchQuery] = useState<SearchQuery>({
 		search: '',
-		activity: {
-			label: '',
-		},
+		activity: '',
 		muscleGroup: '',
 	});
 	const [openMenu, setOpenMenu] = useState(0);
@@ -271,81 +269,78 @@ const SearchExercises = () => {
 	const [workoutPlan, setWorkoutPlan] = useState<WorkoutData[]>([]);
 	const [successfulPopup, setSucessfulPopup] = useState(false);
 
-	// opens dropdown menu
-	const onClick = (e: React.MouseEvent<HTMLDivElement>, number: number) => {
+	const openDropdownMenu = (
+		e: React.MouseEvent<HTMLDivElement>,
+		number: number,
+	) => {
 		e.stopPropagation();
 		setOpenMenu(number);
 	};
 
-	// updates searchQuery State activity or muscleGroup property depending on which dropdown menu was opened
-	const onSelectedOption = (label: string, value: number) => {
-		const findSelectedOption = typeOfExercises.find(
-			option => option.label === label,
-		);
-
-		if (findSelectedOption) {
-			setSearchQuery(prev => ({
-				...prev,
-				activity: { label, value },
-			}));
-		} else {
-			setSearchQuery(prev => ({
-				...prev,
-				muscleGroup: label,
-			}));
-		}
-	};
-
-	//updates searchQuery State 'search' property
-	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	//updates searchQuery State properties
+	const updateTypeOfTraining = (label: string) => {
 		setSearchQuery(prev => ({
 			...prev,
-			[e.target.id]: e.target.value,
+			activity: label,
+		}));
+	};
+	const updateMuscleGroup = (label: string) => {
+		setSearchQuery(prev => ({
+			...prev,
+			muscleGroup: label,
+		}));
+	};
+	const updateSearchInSearchQuery = (
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		setSearchQuery(prev => ({
+			...prev,
+			search: e.target.value,
 		}));
 	};
 
 	// API get request with information from seaerchQuery State. Data then stored into data State
-	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const getMatchedExercises = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-
-		setLoading(true);
-		setData([]);
+		removeOldData();
 
 		const config = {
+			method: 'GET',
+			url: `https://api.api-ninjas.com/v1/exercises`,
 			headers: {
 				'X-API-KEY': `${process.env.REACT_APP_EXERCISES_KEY}`,
 			},
 			params: {
 				name: searchQuery.search,
-				type: searchQuery.activity.label,
+				type: searchQuery.activity,
 				muscle: searchQuery.muscleGroup,
 			},
 		};
 
-		const { data } = await axios.get(
-			`https://api.api-ninjas.com/v1/exercises`,
-			config,
-		);
-
-		data.forEach((data: any) => {
-			setData(prev => [
-				...prev,
-				{
-					name: data.name,
-					type: data.type,
-					equipment: data.equipment,
-					instructions: data.instructions,
-				},
-			]);
+		await axios.request(config).then(({ data }) => {
+			if (data.length === 0) {
+				setError({ active: true, message: 'No Workout Found' });
+				return setLoading(false);
+			} else {
+				setError({ active: false, message: '' });
+				setLoading(false);
+			}
+			data.forEach((data: Data) => {
+				setData(prev => [
+					...prev,
+					{
+						name: data.name,
+						type: data.type,
+						equipment: data.equipment,
+						instructions: data.instructions,
+					},
+				]);
+			});
 		});
-
-		if (data.length === 0) {
-			setError({ active: true, message: 'No Workout Found' });
-			setLoading(false);
-		} else {
-			setError({ active: false, message: '' });
-			setLoading(false);
-		}
+	};
+	const removeOldData = () => {
+		setLoading(true);
+		setData([]);
 	};
 
 	//Selected data from Data State gets stored into workoutPlan State, which gets passed to CreateWorkoutPlan component
@@ -375,7 +370,7 @@ const SearchExercises = () => {
 		<div css={styles.mainContainer}>
 			<h1 css={styles.header}>Create A Workout Plan</h1>
 			<div css={styles.searchContainer}>
-				<form css={styles.formContainer} onSubmit={onSubmit}>
+				<form css={styles.formContainer} onSubmit={getMatchedExercises}>
 					<span>Step 1: Search for workouts</span>
 					<div css={styles.search}>
 						<div css={styles.searchQuery}>
@@ -383,7 +378,10 @@ const SearchExercises = () => {
 								MuscleGroup
 							</label>
 							<div>
-								<div css={styles.dropdownMenu} onClick={e => onClick(e, 2)}>
+								<div
+									css={styles.dropdownMenu}
+									onClick={e => openDropdownMenu(e, 2)}
+								>
 									<span css={styles.dropdownInput}>
 										{searchQuery.muscleGroup === ''
 											? ''
@@ -394,7 +392,7 @@ const SearchExercises = () => {
 								{openMenu === 2 && (
 									<DropdownMenu
 										selectOptions={muscleGroup}
-										onSelectedOption={onSelectedOption}
+										update={updateMuscleGroup}
 									/>
 								)}
 							</div>
@@ -404,18 +402,21 @@ const SearchExercises = () => {
 								Type of training (Optional)
 							</label>
 							<div>
-								<div css={styles.dropdownMenu} onClick={e => onClick(e, 1)}>
+								<div
+									css={styles.dropdownMenu}
+									onClick={e => openDropdownMenu(e, 1)}
+								>
 									<span css={styles.dropdownInput}>
-										{searchQuery.activity.label === ''
+										{searchQuery.activity === ''
 											? ''
-											: `${searchQuery.activity.label}`}
+											: `${searchQuery.activity}`}
 									</span>
 									<img src={DownArrow} alt='' css={styles.icon} />
 								</div>
 								{openMenu === 1 && (
 									<DropdownMenu
-										selectOptions={typeOfExercises}
-										onSelectedOption={onSelectedOption}
+										selectOptions={typeOfTraining}
+										update={updateTypeOfTraining}
 									/>
 								)}
 							</div>
@@ -428,7 +429,7 @@ const SearchExercises = () => {
 								css={styles.dropdownMenu}
 								id='search'
 								type='text'
-								onChange={onChange}
+								onChange={updateSearchInSearchQuery}
 							/>
 						</div>
 					</div>

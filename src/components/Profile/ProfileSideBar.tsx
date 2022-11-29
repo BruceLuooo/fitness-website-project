@@ -58,7 +58,7 @@ const ProfileSideBar = ({ currentState }: props) => {
 	const navigate = useNavigate();
 	let selected = currentState;
 
-	const handleClick = (e: any) => {
+	const navigation = (e: any) => {
 		navigate(`/profile/${e.target.value}`);
 	};
 
@@ -76,7 +76,7 @@ const ProfileSideBar = ({ currentState }: props) => {
 					css={styles.button}
 					id='overview'
 					value='overview'
-					onClick={handleClick}
+					onClick={navigation}
 				>
 					Overview
 				</button>
@@ -93,7 +93,7 @@ const ProfileSideBar = ({ currentState }: props) => {
 					css={styles.button}
 					id='overview'
 					value='nutrition'
-					onClick={handleClick}
+					onClick={navigation}
 				>
 					Nutrition
 				</button>
@@ -110,7 +110,7 @@ const ProfileSideBar = ({ currentState }: props) => {
 					css={styles.button}
 					id='overview'
 					value='fitness'
-					onClick={handleClick}
+					onClick={navigation}
 				>
 					Fitness
 				</button>

@@ -1,22 +1,21 @@
 import { getAuth } from 'firebase/auth';
 import {
 	collection,
-	DocumentData,
 	getDocs,
 	limit,
 	orderBy,
 	query,
 	startAfter,
 } from 'firebase/firestore';
-import { db } from '../firebase.config';
+import { db } from '../../firebase.config';
 
-interface NutritionLog {
-	ingredients: DocumentData;
+interface LogWorkout {
+	name: string;
 	loggedDate: string;
-	total: DocumentData;
+	note: string;
 }
 
-const useChangePage = () => {
+const useChangePageFitnessLog = () => {
 	const convertDate = (timeStamp: Date) => {
 		let date = new Date(timeStamp);
 		return `${date.toDateString()} ${date.toLocaleTimeString()}`;
@@ -49,13 +48,13 @@ const useChangePage = () => {
 
 		const result = await getDocs(nextPage);
 
-		const nutritionLogRef: NutritionLog[] = [];
+		const nutritionLogRef: LogWorkout[] = [];
 
 		result.forEach(doc => {
 			return nutritionLogRef.push({
-				ingredients: doc.data().ingredients,
+				name: doc.data().name,
 				loggedDate: convertDate(doc.data().loggedDate.toDate()),
-				total: doc.data().total,
+				note: doc.data().note,
 			});
 		});
 
@@ -80,13 +79,13 @@ const useChangePage = () => {
 
 			const docSnap = await getDocs(firstPageQuery);
 
-			const nutritionLogRef: NutritionLog[] = [];
+			const nutritionLogRef: LogWorkout[] = [];
 
 			docSnap.forEach(doc => {
 				return nutritionLogRef.push({
-					ingredients: doc.data().ingredients,
+					name: doc.data().name,
 					loggedDate: convertDate(doc.data().loggedDate.toDate()),
-					total: doc.data().total,
+					note: doc.data().note,
 				});
 			});
 
@@ -111,13 +110,13 @@ const useChangePage = () => {
 
 		const test = await getDocs(prevPage);
 
-		const nutritionLogRef: NutritionLog[] = [];
+		const nutritionLogRef: LogWorkout[] = [];
 
 		test.forEach(doc => {
 			return nutritionLogRef.push({
-				ingredients: doc.data().ingredients,
+				name: doc.data().name,
 				loggedDate: convertDate(doc.data().loggedDate.toDate()),
-				total: doc.data().total,
+				note: doc.data().note,
 			});
 		});
 
@@ -127,4 +126,4 @@ const useChangePage = () => {
 	return { nextPage, prevPage };
 };
 
-export default useChangePage;
+export default useChangePageFitnessLog;

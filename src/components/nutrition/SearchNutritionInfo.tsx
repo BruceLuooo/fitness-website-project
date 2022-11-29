@@ -5,7 +5,6 @@ import DisplayNutritionalData from './DisplayNutritionalData';
 import DownArrow from '../../assets/svg/downArrow.svg';
 import redX from '../../assets/redx.png';
 import axios from 'axios';
-import FormCompleted from '../FormCompleted';
 import useDelay from '../../hooks/useDelay';
 import LoadingSpinner from '../LoadingSpinner';
 
@@ -241,8 +240,7 @@ function SearchNutritionInfo() {
 	const [addIngredient, setAddIngredient] = useState(2);
 	const [showMenu, setShowMenu] = useState(false);
 	const [currentIndex, setCurrentIndex] = useState(0);
-	const [dataRecieved, setDataRecived] = useState<Data[]>([]);
-	const [successfulPopup, setSucessfulPopup] = useState(false);
+	const [nutritionData, setNutritionData] = useState<Data[]>([]);
 
 	const selectOptions = [
 		{ value: '', label: '' },
@@ -254,7 +252,7 @@ function SearchNutritionInfo() {
 	];
 
 	//Opens selected dropdown menu
-	const handleInputClick = (
+	const openDropdownMenu = (
 		e: React.MouseEvent<HTMLDivElement, MouseEvent>,
 		index: number,
 	) => {
@@ -264,7 +262,7 @@ function SearchNutritionInfo() {
 	};
 
 	//Updates metrics property of selected ingredient found in ingredients useState
-	const onSelectedMetric = (id: number, option: string) => {
+	const selectMetric = (id: number, option: string) => {
 		setIngredients(prev =>
 			prev.map(ingredients => {
 				if (ingredients.id === id) {
@@ -279,7 +277,10 @@ function SearchNutritionInfo() {
 	};
 
 	//Updates name property of selected ingredient found in ingredients useState
-	const onChange = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
+	const updateIngredientListState = (
+		e: React.ChangeEvent<HTMLInputElement>,
+		id: number,
+	) => {
 		setIngredients(prev =>
 			prev.map(ingredient => {
 				if (ingredient.id === id) {
@@ -297,7 +298,6 @@ function SearchNutritionInfo() {
 			...prevState,
 			{ id: addIngredient, name: '', quantity: 0, metrics: '' },
 		]);
-		setSucessfulPopup(false);
 	};
 
 	//Removes selected object from ingridents useState
@@ -306,53 +306,54 @@ function SearchNutritionInfo() {
 			ingredient => ingredient.id !== id,
 		);
 		setIngredients(filteredIngredients);
-		setDataRecived([]);
-		setSucessfulPopup(false);
+		setNutritionData([]);
 	};
 
 	// API Post request to get data of all ingrients and saved to dataRecieved useState
-	const onSubmit = async (e: React.SyntheticEvent) => {
+	const onSubmitForm = async (e: React.SyntheticEvent) => {
 		e.preventDefault();
-		setLoading(true);
-		setDataRecived([]);
+		removeOldData();
 
 		// Joins all the ingridents into a string that is accepted and readable by the api
-		const allInformation = ingredients.map(ingredient => {
+		const formattedIngredientInformation = ingredients.map(ingredient => {
 			return `${ingredient.quantity + ingredient.metrics} ${ingredient.name}`;
 		});
 
-		allInformation.map(async information => {
+		formattedIngredientInformation.map(async ingredient => {
 			try {
-				const { data } = await axios.post(
-					`https://api.edamam.com/api/nutrition-details?app_id=${process.env.REACT_APP_ID}&app_key=${process.env.REACT_APP_KEY}`,
-					{
-						ingr: [information],
+				const config = {
+					method: 'POST',
+					url: `https://api.edamam.com/api/nutrition-details?app_id=${process.env.REACT_APP_ID}&app_key=${process.env.REACT_APP_KEY}`,
+					data: {
+						ingr: [ingredient],
 					},
-				);
+				};
 
-				if (data.status === 555) return;
+				await axios.request(config).then(({ data }) => {
+					if (data.status === 555) return;
 
-				setDataRecived(prev => [
-					...prev,
-					{
-						name: information,
-						calories: data.calories,
-						totalNutrients: {
-							FAT: {
-								quantity: data.totalNutrients.FAT.quantity,
-								unit: data.totalNutrients.FAT.unit,
-							},
-							SUGAR: {
-								quantity: data.totalNutrients.SUGAR?.quantity,
-								unit: data.totalNutrients.SUGAR?.unit,
-							},
-							PROCNT: {
-								quantity: data.totalNutrients.PROCNT.quantity,
-								unit: data.totalNutrients.PROCNT.unit,
+					setNutritionData(prev => [
+						...prev,
+						{
+							name: ingredient,
+							calories: data.calories,
+							totalNutrients: {
+								FAT: {
+									quantity: data.totalNutrients.FAT.quantity,
+									unit: data.totalNutrients.FAT.unit,
+								},
+								SUGAR: {
+									quantity: data.totalNutrients.SUGAR?.quantity,
+									unit: data.totalNutrients.SUGAR?.unit,
+								},
+								PROCNT: {
+									quantity: data.totalNutrients.PROCNT.quantity,
+									unit: data.totalNutrients.PROCNT.unit,
+								},
 							},
 						},
-					},
-				]);
+					]);
+				});
 			} catch (error) {
 				return;
 			}
@@ -361,6 +362,10 @@ function SearchNutritionInfo() {
 		await delay(2000);
 		setLoading(false);
 	};
+	const removeOldData = () => {
+		setLoading(true);
+		setNutritionData([]);
+	};
 
 	return (
 		<div css={styles.container}>
@@ -368,7 +373,7 @@ function SearchNutritionInfo() {
 				Search Nutritional Data To Log
 			</h1>
 			<div css={styles.mainContainer}>
-				<form onSubmit={onSubmit} css={styles.formContainer}>
+				<form onSubmit={onSubmitForm} css={styles.formContainer}>
 					{ingredients.map(ingredient => (
 						<div key={ingredient.id} css={styles.formInput}>
 							<div css={styles.inputStructure}>
@@ -381,7 +386,7 @@ function SearchNutritionInfo() {
 									type='text'
 									placeholder='ex. chicken breast'
 									required
-									onChange={e => onChange(e, ingredient.id)}
+									onChange={e => updateIngredientListState(e, ingredient.id)}
 								/>
 							</div>
 							<div css={styles.inputStructure}>
@@ -397,14 +402,14 @@ function SearchNutritionInfo() {
 									type='number'
 									placeholder='ex. 1'
 									required
-									onChange={e => onChange(e, ingredient.id)}
+									onChange={e => updateIngredientListState(e, ingredient.id)}
 								/>
 							</div>
 							<div css={[styles.dropdownContainer, styles.inputStructure]}>
 								<label css={[styles.label, styles.fontColor]}>(Optional)</label>
 								<div
 									css={[styles.input, styles.dropdownInput]}
-									onClick={e => handleInputClick(e, ingredient.id)}
+									onClick={e => openDropdownMenu(e, ingredient.id)}
 								>
 									<span>
 										{ingredient.metrics === '' ? '' : `${ingredient.metrics}`}
@@ -418,7 +423,7 @@ function SearchNutritionInfo() {
 												key={option.value}
 												css={styles.dropdownitem}
 												onClick={() =>
-													onSelectedMetric(ingredient.id, option.value)
+													selectMetric(ingredient.id, option.value)
 												}
 											>
 												{option.label}
@@ -445,25 +450,15 @@ function SearchNutritionInfo() {
 						</button>
 					</div>
 				</form>
-				{!successfulPopup ? (
-					<div>
-						{loading ? (
-							<div css={styles.displaySpinnerContainer}>
-								<LoadingSpinner />
-							</div>
-						) : (
-							<DisplayNutritionalData
-								dataRecieved={dataRecieved}
-								setSucessfulPopup={setSucessfulPopup}
-							/>
-						)}
-					</div>
-				) : (
-					<FormCompleted
-						setSucessfulPopup={setSucessfulPopup}
-						text='Nutrition'
-					/>
-				)}
+				<div>
+					{loading ? (
+						<div css={styles.displaySpinnerContainer}>
+							<LoadingSpinner />
+						</div>
+					) : (
+						<DisplayNutritionalData nutritionData={nutritionData} />
+					)}
+				</div>
 			</div>
 		</div>
 	);

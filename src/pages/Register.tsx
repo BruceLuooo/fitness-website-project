@@ -6,18 +6,9 @@ import { useError } from '../hooks/useError';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { db } from '../firebase.config';
 import { setDoc, doc } from 'firebase/firestore';
+import { useRegister } from '../hooks/loginAndRegister/useRegister';
 import show from '../assets/showPassword.png';
 import hide from '../assets/hidePassword.png';
-
-interface login {
-	name: string;
-	lastname: string;
-	email: string;
-	password: string;
-	confirmPassword: string;
-	workoutsPerMonth: number;
-	caloriesPerDay: number;
-}
 
 const Register = () => {
 	const mq2 = `@media screen and (max-width: 768px)`;
@@ -94,40 +85,30 @@ const Register = () => {
 		`,
 	};
 
+	const {
+		registerInfo,
+		updateRegisterInfo,
+		doesPasswordMatch,
+		isFormCompleted,
+		isPasswordTooShort,
+	} = useRegister();
+
 	const { error, setError } = useError();
 	const navigate = useNavigate();
 
-	const [registerInfo, setRegisterInfo] = useState<login>({
-		name: '',
-		lastname: '',
-		email: '',
-		password: '',
-		confirmPassword: '',
-		workoutsPerMonth: 0,
-		caloriesPerDay: 0,
-	});
 	const [showPassword, setShowPassword] = useState(false);
 
-	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setRegisterInfo(prev => ({
-			...prev,
-			[e.target.id]: e.target.value,
-		}));
-	};
-
-	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const register = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		if (registerInfo.confirmPassword !== registerInfo.password) {
+		if (doesPasswordMatch()) {
 			return setError({ active: true, message: 'passwords do not match' });
-		}
-		if (
-			registerInfo.confirmPassword === '' ||
-			registerInfo.lastname === '' ||
-			registerInfo.email === '' ||
-			registerInfo.name === '' ||
-			registerInfo.password === ''
-		) {
+		} else if (isPasswordTooShort()) {
+			return setError({
+				active: true,
+				message: 'Password must be longer than 6 characters',
+			});
+		} else if (isFormCompleted()) {
 			return setError({ active: true, message: 'Please fill in all fields' });
 		}
 
@@ -153,7 +134,7 @@ const Register = () => {
 	return (
 		<div css={styles.container}>
 			<div css={styles.logoFont}>Create Your Account</div>
-			<form css={styles.formContainer} onSubmit={onSubmit}>
+			<form css={styles.formContainer} onSubmit={register}>
 				<div css={styles.fullName}>
 					<div css={styles.input}>
 						<label css={styles.label} htmlFor='name'>
@@ -163,7 +144,7 @@ const Register = () => {
 							css={styles.inputBox}
 							id='name'
 							type='text'
-							onChange={onChange}
+							onChange={updateRegisterInfo}
 						/>
 					</div>
 					<div css={styles.input}>
@@ -174,7 +155,7 @@ const Register = () => {
 							css={styles.inputBox}
 							id='lastname'
 							type='text'
-							onChange={onChange}
+							onChange={updateRegisterInfo}
 						/>
 					</div>
 				</div>
@@ -187,7 +168,7 @@ const Register = () => {
 						css={styles.inputBox}
 						id='email'
 						type='text'
-						onChange={onChange}
+						onChange={updateRegisterInfo}
 					/>
 				</div>
 				<div css={styles.fullName}>
@@ -199,7 +180,7 @@ const Register = () => {
 							css={styles.inputBox}
 							id='password'
 							type={showPassword ? 'text' : 'password'}
-							onChange={onChange}
+							onChange={updateRegisterInfo}
 						/>
 						<img
 							src={showPassword ? show : hide}
@@ -216,7 +197,7 @@ const Register = () => {
 							css={styles.inputBox}
 							id='confirmPassword'
 							type='password'
-							onChange={onChange}
+							onChange={updateRegisterInfo}
 						/>
 					</div>
 				</div>

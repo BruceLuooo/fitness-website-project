@@ -101,28 +101,28 @@ const PersonalInfo = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [popupMessage, setPopupMessage] = useState({ type: '', message: '' });
 
-	// useEffect(() => {
-	// 	const fetchUserData = async () => {
-	// 		const docRef = doc(db, 'users', auth.currentUser!.uid);
-	// 		const docSnap = await getDoc(docRef);
+	useEffect(() => {
+		const fetchUserData = async () => {
+			const docRef = doc(db, 'users', auth.currentUser!.uid);
+			const docSnap = await getDoc(docRef);
 
-	// 		if (docSnap.exists()) {
-	// 			const data = docSnap.data();
+			if (docSnap.exists()) {
+				const data = docSnap.data();
 
-	// 			setUserInfo({
-	// 				name: data.name,
-	// 				lastname: data.lastname,
-	// 				email: data.email,
-	// 				password: data.password,
-	// 				workoutsPerMonth: data.workoutsPerMonth,
-	// 				caloriesPerDay: data.caloriesPerDay,
-	// 			});
+				setUserInfo({
+					name: data.name,
+					lastname: data.lastname,
+					email: data.email,
+					password: data.password,
+					workoutsPerMonth: data.workoutsPerMonth,
+					caloriesPerDay: data.caloriesPerDay,
+				});
 
-	// 			setOldUserInfo({ email: data.email, password: data.password });
-	// 		}
-	// 	};
-	// 	fetchUserData();
-	// }, [auth.currentUser]);
+				setOldUserInfo({ email: data.email, password: data.password });
+			}
+		};
+		fetchUserData();
+	}, [auth.currentUser]);
 
 	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setUserInfo(prev => ({

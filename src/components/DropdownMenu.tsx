@@ -9,13 +9,10 @@ interface Options {
 
 interface Props {
 	selectOptions: Options[];
-	onSelectedOption: Function;
+	update: Function;
 }
 
-const DropdownMenu: FunctionComponent<Props> = ({
-	selectOptions,
-	onSelectedOption,
-}) => {
+const DropdownMenu: FunctionComponent<Props> = ({ selectOptions, update }) => {
 	const mq1 = `@media screen and (max-width: 1283px)`;
 	const mq2 = `@media screen and (max-width: 768px)`;
 
@@ -69,7 +66,7 @@ const DropdownMenu: FunctionComponent<Props> = ({
 				<div
 					key={index}
 					css={styles.dropdownitem}
-					onClick={() => onSelectedOption(option.label, option.value)}
+					onClick={() => update(option.label, option.value)}
 				>
 					{option.label}
 				</div>

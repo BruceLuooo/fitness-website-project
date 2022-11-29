@@ -159,13 +159,16 @@ const CreateWorkoutPlan: FC<Props> = ({
 		setError({ active: false, message: '' });
 	};
 
-	//Reorder workout from workoutPlan State
-	const reorder = (e: any, data: data) => {
+	const isAbleToReorder = (newIndex: number, workoutPlan: data[]) => {
+		return newIndex < 0 || newIndex > workoutPlan.length;
+	};
+
+	const reorderWorkoutPlan = (e: any, data: data) => {
 		const newIndex =
 			workoutPlan.map(workout => workout.name).indexOf(data.name) +
 			(e.target.id === 'up' ? -1 : 1);
 
-		if (newIndex < 0 || newIndex > workoutPlan.length) {
+		if (isAbleToReorder(newIndex, workoutPlan)) {
 			return;
 		}
 
@@ -178,18 +181,18 @@ const CreateWorkoutPlan: FC<Props> = ({
 	};
 
 	//Updates the reps and sets fields in a selected workout found in workoutPlan State
-	const onChange = (e: any, index: number) => {
-		let clone = [...workoutPlan];
-		let obj = clone[index];
+	const updateRepsAndSets = (e: any, index: number) => {
+		let workoutPlanCopy = [...workoutPlan];
+		let selectedWorkout = workoutPlanCopy[index];
 
 		if (e.target.id === 'reps') {
-			obj.reps = e.target.value;
-			clone[index] = obj;
-			setWorkoutPlan([...clone]);
+			selectedWorkout.reps = e.target.value;
+			workoutPlanCopy[index] = selectedWorkout;
+			setWorkoutPlan([...workoutPlanCopy]);
 		} else {
-			obj.sets = e.target.value;
-			clone[index] = obj;
-			setWorkoutPlan([...clone]);
+			selectedWorkout.sets = e.target.value;
+			workoutPlanCopy[index] = selectedWorkout;
+			setWorkoutPlan([...workoutPlanCopy]);
 		}
 	};
 
@@ -262,14 +265,14 @@ const CreateWorkoutPlan: FC<Props> = ({
 									type='text'
 									id='reps'
 									placeholder='Reps'
-									onChange={e => onChange(e, index)}
+									onChange={e => updateRepsAndSets(e, index)}
 								/>
 								<input
 									css={styles.valueInput}
 									type='text'
 									id='sets'
 									placeholder='Sets'
-									onChange={e => onChange(e, index)}
+									onChange={e => updateRepsAndSets(e, index)}
 								/>
 							</div>
 							<div css={styles.moveUpOrDown}>
@@ -278,14 +281,14 @@ const CreateWorkoutPlan: FC<Props> = ({
 									alt='up'
 									css={styles.svgButton}
 									id='up'
-									onClick={e => reorder(e, currentWorkout)}
+									onClick={e => reorderWorkoutPlan(e, currentWorkout)}
 								/>
 								<img
 									src={moveDown}
 									alt='down'
 									css={styles.svgButton}
 									id='down'
-									onClick={e => reorder(e, currentWorkout)}
+									onClick={e => reorderWorkoutPlan(e, currentWorkout)}
 								/>
 							</div>
 						</div>

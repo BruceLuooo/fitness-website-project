@@ -1,21 +1,22 @@
 import { getAuth } from 'firebase/auth';
 import {
 	collection,
+	DocumentData,
 	getDocs,
 	limit,
 	orderBy,
 	query,
 	startAfter,
 } from 'firebase/firestore';
-import { db } from '../firebase.config';
+import { db } from '../../firebase.config';
 
-interface LogWorkout {
-	name: string;
+interface NutritionLog {
+	ingredients: DocumentData;
 	loggedDate: string;
-	note: string;
+	total: DocumentData;
 }
 
-const useChangePageFitnessLog = () => {
+const useChangePage = () => {
 	const convertDate = (timeStamp: Date) => {
 		let date = new Date(timeStamp);
 		return `${date.toDateString()} ${date.toLocaleTimeString()}`;
@@ -48,13 +49,13 @@ const useChangePageFitnessLog = () => {
 
 		const result = await getDocs(nextPage);
 
-		const nutritionLogRef: LogWorkout[] = [];
+		const nutritionLogRef: NutritionLog[] = [];
 
 		result.forEach(doc => {
 			return nutritionLogRef.push({
-				name: doc.data().name,
+				ingredients: doc.data().ingredients,
 				loggedDate: convertDate(doc.data().loggedDate.toDate()),
-				note: doc.data().note,
+				total: doc.data().total,
 			});
 		});
 
@@ -79,13 +80,13 @@ const useChangePageFitnessLog = () => {
 
 			const docSnap = await getDocs(firstPageQuery);
 
-			const nutritionLogRef: LogWorkout[] = [];
+			const nutritionLogRef: NutritionLog[] = [];
 
 			docSnap.forEach(doc => {
 				return nutritionLogRef.push({
-					name: doc.data().name,
+					ingredients: doc.data().ingredients,
 					loggedDate: convertDate(doc.data().loggedDate.toDate()),
-					note: doc.data().note,
+					total: doc.data().total,
 				});
 			});
 
@@ -110,13 +111,13 @@ const useChangePageFitnessLog = () => {
 
 		const test = await getDocs(prevPage);
 
-		const nutritionLogRef: LogWorkout[] = [];
+		const nutritionLogRef: NutritionLog[] = [];
 
 		test.forEach(doc => {
 			return nutritionLogRef.push({
-				name: doc.data().name,
+				ingredients: doc.data().ingredients,
 				loggedDate: convertDate(doc.data().loggedDate.toDate()),
-				note: doc.data().note,
+				total: doc.data().total,
 			});
 		});
 
@@ -126,4 +127,4 @@ const useChangePageFitnessLog = () => {
 	return { nextPage, prevPage };
 };
 
-export default useChangePageFitnessLog;
+export default useChangePage;

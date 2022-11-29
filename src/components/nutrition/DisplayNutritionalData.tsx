@@ -31,8 +31,7 @@ interface Data {
 }
 
 interface Props {
-	dataRecieved: Data[];
-	setSucessfulPopup: Function;
+	nutritionData: Data[];
 }
 
 interface LogData {
@@ -40,7 +39,7 @@ interface LogData {
 	loggedDate: FieldValue;
 }
 
-const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
+const DisplayNutritionalData = ({ nutritionData }: Props) => {
 	const mq2 = `@media screen and (max-width: 768px)`;
 
 	const styles = {
@@ -155,7 +154,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 	const { popup, setPopup } = usePopup();
 
 	//Get total for all nutritional information
-	dataRecieved.forEach(data => {
+	nutritionData.forEach(data => {
 		totalCalories += data.calories;
 		totalFat += data.totalNutrients.FAT.quantity;
 		totalProtein += data.totalNutrients.PROCNT.quantity;
@@ -172,18 +171,18 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 		calories: [],
 	});
 
-	//Store data from dataReceived State into addDataToLog State
+	//Store data from nutritionData State into addDataToLog State
 	//but adjusted in a way so that it can be stored in Firebase database
 	useEffect(() => {
-		if (dataRecieved.length === 0) {
-			setAddDataToLog({
+		if (nutritionData.length === 0) {
+			return setAddDataToLog({
 				loggedDate: serverTimestamp(),
 				ingredients: [],
 				calories: [],
 			});
 		}
 
-		const ingredients = dataRecieved.map(data => {
+		const formattedNutritionData = nutritionData.map(data => {
 			return `${data.name}: ${Math.round(data.calories)} calories, ${Math.round(
 				data.totalNutrients.PROCNT.quantity,
 			)}g protein, ${Math.round(
@@ -191,30 +190,26 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 			)}g fat, ${Math.round(data.totalNutrients.SUGAR!.quantity)}g sugar`;
 		});
 
-		const calories = dataRecieved.map(data => {
+		const calories = nutritionData.map(data => {
 			return Math.round(data.calories);
 		});
 
 		setAddDataToLog({
 			loggedDate: serverTimestamp(),
-			ingredients: ingredients,
+			ingredients: formattedNutritionData,
 			calories: calories,
 		});
-	}, [dataRecieved]);
+	}, [nutritionData]);
 
 	//Stores new data into Firebase Database
 	const addToNutritionLog = async (e: React.MouseEvent<HTMLButtonElement>) => {
-		try {
-			const auth = getAuth();
-			const docRef = collection(
-				db,
-				`users/${auth.currentUser!.uid}/nutrition-log`,
-			);
-			await addDoc(docRef, addDataToLog);
-			setSucessfulPopup(true);
-		} catch (error) {
-			setSucessfulPopup(true);
-		}
+		const auth = getAuth();
+		const docRef = collection(
+			db,
+			`users/${auth.currentUser!.uid}/nutrition-log`,
+		);
+		await addDoc(docRef, addDataToLog);
+		window.location.reload();
 	};
 
 	return (
@@ -224,7 +219,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 			<div css={styles.dataContainer}>
 				<div css={styles.dataStructure}>
 					<h2 css={styles.h2}>Ingridents</h2>
-					{dataRecieved.map(data => (
+					{nutritionData.map(data => (
 						<span css={styles.h3} key={data.name}>
 							{data.name}
 						</span>
@@ -233,7 +228,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 				</div>
 				<div css={styles.dataStructure}>
 					<h2 css={styles.h2}>Calories</h2>
-					{dataRecieved.map(data => (
+					{nutritionData.map(data => (
 						<span css={styles.h3} key={data.calories}>
 							{data.calories}
 						</span>
@@ -242,7 +237,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 				</div>
 				<div css={styles.dataStructure}>
 					<h2 css={styles.h2}>Protein</h2>
-					{dataRecieved.map(data => (
+					{nutritionData.map(data => (
 						<span css={styles.h3} key={data.totalNutrients.PROCNT.quantity}>
 							{Math.round(data.totalNutrients.PROCNT.quantity)}
 							{data.totalNutrients.PROCNT.unit}
@@ -252,7 +247,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 				</div>
 				<div css={styles.dataStructure}>
 					<h2 css={styles.h2}>Fat</h2>
-					{dataRecieved.map(data => (
+					{nutritionData.map(data => (
 						<span css={styles.h3} key={data.totalNutrients.FAT.quantity}>
 							{Math.round(data.totalNutrients.FAT.quantity)}
 							{data.totalNutrients.FAT.unit}
@@ -262,7 +257,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 				</div>
 				<div css={styles.dataStructure}>
 					<h2 css={styles.h2}>Sugar</h2>
-					{dataRecieved.map(data => (
+					{nutritionData.map(data => (
 						<span css={styles.h3} key={data.totalNutrients.SUGAR!.quantity}>
 							{data.totalNutrients.SUGAR?.quantity === undefined
 								? '0g'
@@ -273,7 +268,7 @@ const DisplayNutritionalData = ({ dataRecieved, setSucessfulPopup }: Props) => {
 					<span css={styles.total}>{Math.round(totalSugar)}g</span>
 				</div>
 			</div>
-			{dataRecieved.length > 0 && (
+			{nutritionData.length > 0 && (
 				<button css={styles.button} onClick={addToNutritionLog}>
 					Add to Nutrition Log
 				</button>

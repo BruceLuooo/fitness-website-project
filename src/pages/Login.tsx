@@ -5,17 +5,13 @@ import show from '../assets/showPassword.png';
 import hide from '../assets/hidePassword.png';
 import { useNavigate } from 'react-router-dom';
 import { useError } from '../hooks/useError';
+import { useLogin } from '../hooks/loginAndRegister/useLogin';
 import {
 	browserSessionPersistence,
 	getAuth,
 	setPersistence,
 	signInWithEmailAndPassword,
 } from 'firebase/auth';
-
-interface login {
-	email: string;
-	password: string;
-}
 
 const Login = () => {
 	const mq2 = `@media screen and (max-width: 768px)`;
@@ -88,26 +84,15 @@ const Login = () => {
 		`,
 	};
 
-	const { error, setError } = useError();
 	const navigate = useNavigate();
-
-	const [loginInfo, setLoginInfo] = useState<login>({
-		email: '',
-		password: '',
-	});
+	const { error, setError } = useError();
+	const { loginInfo, updateLoginInfo, isLoginFormCompleted } = useLogin();
 	const [showPassword, setShowPassword] = useState(false);
 
-	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setLoginInfo(prev => ({
-			...prev,
-			[e.target.id]: e.target.value,
-		}));
-	};
-
-	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const login = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		if (loginInfo.email === '' || loginInfo.password === '') {
+		if (isLoginFormCompleted(loginInfo)) {
 			return setError({ active: true, message: 'Please fill in all fields' });
 		}
 
@@ -128,7 +113,6 @@ const Login = () => {
 					navigate('/profile/overview');
 				}
 			} catch (error) {
-				console.log('wrong email/password');
 				return setError({ active: true, message: 'Invalid Email/Password' });
 			}
 		});
@@ -137,7 +121,7 @@ const Login = () => {
 	return (
 		<div css={styles.container}>
 			<div css={styles.logoFont}>Sign Into Your Account</div>
-			<form css={styles.formContainer} onSubmit={onSubmit}>
+			<form css={styles.formContainer} onSubmit={login}>
 				<div css={styles.input}>
 					<label css={styles.label} htmlFor='email'>
 						Email
@@ -146,7 +130,7 @@ const Login = () => {
 						css={styles.inputBox}
 						id='email'
 						type='text'
-						onChange={onChange}
+						onChange={updateLoginInfo}
 					/>
 				</div>
 				<div css={styles.input}>
@@ -157,7 +141,7 @@ const Login = () => {
 						css={styles.inputBox}
 						id='password'
 						type={showPassword ? 'text' : 'password'}
-						onChange={onChange}
+						onChange={updateLoginInfo}
 					/>
 					<img
 						src={showPassword ? show : hide}

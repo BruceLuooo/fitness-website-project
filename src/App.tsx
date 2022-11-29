@@ -7,7 +7,7 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Overview from './pages/Profile/Overview';
-import PersonalInfo from './pages/Profile/PersonalInfo';
+import PersonalInfo from './components/profileOverview/PersonalInfo';
 import PersonalNutrition from './pages/Profile/PersonalNutrition';
 import PersonalFitness from './pages/Profile/PesrsonalFitness';
 import PrivateRoute from './components/privateRoutes/PrivateRoute';

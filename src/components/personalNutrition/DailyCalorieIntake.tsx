@@ -2,12 +2,12 @@
 import { css } from '@emotion/react';
 import { useEffect, useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
-import QuestionMark from '../assets/questionMark.png';
-import DownArrow from '../assets/svg/downArrow.svg';
-import { useError } from '../hooks/useError';
-import { usePopup } from '../hooks/usePopup';
-import DropdownMenu from './DropdownMenu';
-import { db } from '../firebase.config';
+import QuestionMark from '../../assets/questionMark.png';
+import DownArrow from '../../assets/svg/downArrow.svg';
+import { useError } from '../../hooks/useError';
+import { usePopup } from '../../hooks/usePopup';
+import DropdownMenu from '../DropdownMenu';
+import { db } from '../../firebase.config';
 import { getAuth } from 'firebase/auth';
 
 interface Data {
@@ -255,7 +255,7 @@ const DailyCalorieIntake = () => {
 	});
 
 	//Updates data in data useState
-	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	const updateState = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setData(prev => ({
 			...prev,
 			[e.target.id]: e.target.value,
@@ -263,13 +263,13 @@ const DailyCalorieIntake = () => {
 	};
 
 	//Opens selected Dropdown Menu
-	const onClick = (e: React.MouseEvent<HTMLDivElement>) => {
+	const openDropdownMenu = (e: React.MouseEvent<HTMLDivElement>) => {
 		e.stopPropagation();
 		setOpenMenu(!openMenu);
 	};
 
 	//Updates activity property in data useState
-	const onSelectedOption = (label: string, value: number) => {
+	const onSelectedDropdownOption = (label: string, value: number) => {
 		setData(prev => ({
 			...prev,
 			activity: { label, value },
@@ -277,17 +277,17 @@ const DailyCalorieIntake = () => {
 	};
 
 	//Returns Average Daily Calorie Intake to maintain weight
-	const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-
-		if (
-			data.age === null ||
-			data.height === null ||
-			data.weight === null ||
+	const isFormCompleted = (data: Data) => {
+		return (
 			data.activity.value === null ||
 			data.activity.label === '' ||
 			data.gender === ''
-		) {
+		);
+	};
+	const onSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
+		if (isFormCompleted(data)) {
 			return setError({ active: true, message: 'Please fill in all fields' });
 		} else {
 			const gender = data.gender === 'male' ? 161 : 5;
@@ -355,12 +355,12 @@ const DailyCalorieIntake = () => {
 				</div>
 			</div>
 			<div css={styles.formAndResultsContainer}>
-				<form css={styles.formContainer} onSubmit={onSubmit}>
+				<form css={styles.formContainer} onSubmit={onSubmitForm}>
 					<div css={styles.formInput}>
 						<label css={styles.label} htmlFor='age'>
 							Age{' '}
 						</label>
-						<input id='age' type='number' required onChange={onChange} />
+						<input id='age' type='number' required onChange={updateState} />
 					</div>
 					<div css={styles.formInput}>
 						<label css={styles.label} htmlFor='Gender'>
@@ -373,7 +373,7 @@ const DailyCalorieIntake = () => {
 									id='gender'
 									value='male'
 									checked={data.gender === 'male' && true}
-									onChange={onChange}
+									onChange={updateState}
 								/>
 								<label htmlFor='male'>Male</label>
 							</div>
@@ -383,7 +383,7 @@ const DailyCalorieIntake = () => {
 									id='gender'
 									value='female'
 									checked={data.gender === 'female' && true}
-									onChange={onChange}
+									onChange={updateState}
 								/>
 								<label htmlFor='female'>Female</label>
 							</div>
@@ -393,13 +393,13 @@ const DailyCalorieIntake = () => {
 						<label css={styles.label} htmlFor='height'>
 							Height (cm)
 						</label>
-						<input id='height' type='number' required onChange={onChange} />
+						<input id='height' type='number' required onChange={updateState} />
 					</div>
 					<div css={styles.formInput}>
 						<label css={styles.label} htmlFor='weight'>
 							Weight (kg)
 						</label>
-						<input id='weight' type='number' required onChange={onChange} />
+						<input id='weight' type='number' required onChange={updateState} />
 					</div>
 					<div css={styles.formInput}>
 						<label css={styles.label} htmlFor='activity'>
@@ -407,7 +407,7 @@ const DailyCalorieIntake = () => {
 						</label>
 
 						<div css={styles.dropdownContainer}>
-							<div css={styles.dropdownInput} onClick={onClick}>
+							<div css={styles.dropdownInput} onClick={openDropdownMenu}>
 								<div css={styles.activityLabel}>
 									{data.activity.label === '' ? '' : `${data.activity.label}`}
 								</div>
@@ -416,7 +416,7 @@ const DailyCalorieIntake = () => {
 							{openMenu === true && (
 								<DropdownMenu
 									selectOptions={selectOptions}
-									onSelectedOption={onSelectedOption}
+									update={onSelectedDropdownOption}
 								/>
 							)}
 						</div>
