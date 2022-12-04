@@ -131,7 +131,7 @@ function MonthlyCalories() {
 	};
 
 	const { calorieTarget } = useMonthlyCalorieTarget();
-	const currentMonthAndYear = useGetCurrentMonth();
+	const { getCurrentMonth } = useGetCurrentMonth();
 	const navigate = useNavigate();
 	const [averageCalorieIntake, setAverageCalorieIntake] = useState<number>(0);
 	const [monthlyCalorieIntakeLog, setMonthlyCalorieIntakeLog] = useState<
@@ -172,14 +172,13 @@ function MonthlyCalories() {
 			);
 			const q = query(
 				getCollectionWorkoutLog,
-				where('loggedDate', '>=', currentMonthAndYear),
+				where('loggedDate', '>=', getCurrentMonth()),
 			);
 			const docSnap = await getDocs(q);
 
 			const docRef: DocumentData[] = [];
 
 			docSnap.forEach(doc => {
-				console.log(doc.data());
 				docRef.push(doc.data().calories);
 			});
 
@@ -187,7 +186,7 @@ function MonthlyCalories() {
 		};
 
 		getCalorieIntakeForTheMonth();
-	}, [currentMonthAndYear]);
+	}, []);
 
 	return (
 		<div css={styles.overviewContainer}>
@@ -217,7 +216,10 @@ function MonthlyCalories() {
 				)}
 			</div>
 			<div css={styles.buttonLayout}>
-				<button css={styles.button} onClick={() => navigate('/nutrition')}>
+				<button
+					css={styles.button}
+					onClick={() => navigate('/profile/nutrition')}
+				>
 					Log Nutrition
 				</button>
 				<button

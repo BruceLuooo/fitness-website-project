@@ -113,11 +113,13 @@ function MonthlyWorkouts() {
 		`,
 	};
 
-	const currentMonthAndYear = useGetCurrentMonth();
+	const { getCurrentMonth, getPreviousMonthEnd, getPreviousMonthStart } =
+		useGetCurrentMonth();
 	const { workoutTarget, changeWorkoutTarget } = useMonthlyWorkoutTarget();
 	const navigate = useNavigate();
 
 	const [monthlyWorkoutLog, setMonthlyWorkoutLog] = useState<number>(0);
+	const [prevMonthWorkoutLog, setPrevMonthWorkoutLog] = useState<number>(0);
 	const [popup, setPopup] = useState(false);
 	const [updateWorkoutTarget, setUpdateWorkoutTarget] = useState<string>('');
 
@@ -136,14 +138,33 @@ function MonthlyWorkouts() {
 			);
 			const q = query(
 				getCollectionWorkoutLog,
-				where('loggedDate', '>=', currentMonthAndYear),
+				where('loggedDate', '>=', getCurrentMonth()),
 			);
 			const docSnap = (await getDocs(q)).size;
 			setMonthlyWorkoutLog(docSnap);
 		};
 
 		getWorkoutLogForTheMonth();
-	}, [currentMonthAndYear]);
+	}, [getCurrentMonth]);
+	useEffect(() => {
+		const getWorkoutLogForLastMonth = async () => {
+			const auth = getAuth();
+
+			const getCollectionWorkoutLog = collection(
+				db,
+				`users/${auth.currentUser!.uid}/workout-log`,
+			);
+			const q = query(
+				getCollectionWorkoutLog,
+				where('loggedDate', '>', getPreviousMonthStart()),
+				where('loggedDate', '<', getPreviousMonthEnd()),
+			);
+			const docSnap = (await getDocs(q)).size;
+			setPrevMonthWorkoutLog(docSnap);
+		};
+
+		getWorkoutLogForLastMonth();
+	}, []);
 
 	return (
 		<div css={styles.overviewContainer}>
@@ -157,15 +178,15 @@ function MonthlyWorkouts() {
 				<div css={styles.dataLayout}>
 					<div css={styles.workoutData}>
 						<span css={styles.largeFont}>{monthlyWorkoutLog}</span>
-						<span css={styles.smallFont}>Workouts Completed</span>
+						<span css={styles.smallFont}>Workouts Completed This Month</span>
 					</div>
 					<div css={styles.workoutData}>
-						<span css={styles.largeFont}>18</span>
+						<span css={styles.largeFont}>{prevMonthWorkoutLog}</span>
 						<span css={styles.smallFont}>Workouts Completed Last Month</span>
 					</div>
 					<div css={styles.workoutData}>
-						<span css={styles.largeFont}>22</span>
-						<span css={styles.smallFont}>Total Workouts/Month</span>
+						<span css={styles.largeFont}>{workoutTarget}</span>
+						<span css={styles.smallFont}>Target Workouts/Month</span>
 					</div>
 				</div>
 			</div>

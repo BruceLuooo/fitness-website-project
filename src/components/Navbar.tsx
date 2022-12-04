@@ -72,11 +72,13 @@ const Navbar = () => {
 			text-decoration: none;
 			color: black;
 			transition: 0.3s;
+			font-size: 22px;
 			&:hover {
 				opacity: 70%;
 				text-shadow: 1px;
 			}
 			${mq1} {
+				font-size: 32px;
 				padding: unset;
 			}
 		`,
@@ -85,6 +87,9 @@ const Navbar = () => {
 			background-color: whitesmoke;
 			font-size: 100%;
 			cursor: pointer;
+			${mq1} {
+				background-color: white;
+			}
 		`,
 		logout: css`
 			color: black;
@@ -116,17 +121,17 @@ const Navbar = () => {
 				width: 100%;
 				height: 100vh;
 				background-color: white;
-				font-size: 20px;
+				font-size: 32px;
 			}
 		`,
 	};
 
 	const navigate = useNavigate();
-	const auth = getAuth();
 	const token = sessionStorage.getItem('token');
 	const [openMenu, setOpenMenu] = useState<Boolean>(false);
 
 	const logout = () => {
+		const auth = getAuth();
 		auth.signOut();
 		sessionStorage.removeItem('token');
 		navigate('/');
@@ -134,6 +139,8 @@ const Navbar = () => {
 	};
 
 	const demoLogin = async () => {
+		const auth = getAuth();
+
 		setPersistence(auth, browserSessionPersistence).then(async () => {
 			const { user } = await signInWithEmailAndPassword(
 				auth,
@@ -144,6 +151,7 @@ const Navbar = () => {
 			if (user) {
 				const token = await user.getIdToken();
 				sessionStorage.setItem('token', token);
+				setOpenMenu(false);
 				navigate('/profile/overview');
 			}
 		});
@@ -158,41 +166,48 @@ const Navbar = () => {
 						<div css={styles.logoFont}>NoBull Fitness</div>
 					</div>
 				</a>
-				<ul css={[styles.navbar, openMenu && styles.DropdownMenuView]}>
-					{token && (
+				{token ? (
+					<ul css={[styles.navbar, openMenu && styles.DropdownMenuView]}>
 						<li>
-							<a css={styles.navigationItems} href='/profile/overview'>
+							<a
+								css={styles.navigationItems}
+								href='/profile/overview'
+								id='profile'
+							>
 								Profile
 							</a>
 						</li>
-					)}
-					{token ? (
-						<li>
-							<div
-								css={[styles.navigationItems, styles.logout]}
-								onClick={logout}
-							>
-								Logout
-							</div>
+						<li
+							css={[styles.navigationItems, styles.logout]}
+							onClick={logout}
+							id='logout'
+						>
+							Logout
 						</li>
-					) : (
+					</ul>
+				) : (
+					<ul css={[styles.navbar, openMenu && styles.DropdownMenuView]}>
 						<li>
-							<a css={styles.navigationItems} href='/login'>
+							<a css={styles.navigationItems} id='login' href='/login'>
 								Login
 							</a>
+						</li>
+						<li>
 							<button
-								css={[styles.navigationItems, styles.demoLogin]}
+								css={[styles.demoLogin]}
 								onClick={demoLogin}
+								id='demoLogin'
 							>
 								Demo Login{' '}
 							</button>
 						</li>
-					)}
-				</ul>
+					</ul>
+				)}
 				<img
 					css={[styles.dropDownMenuImage]}
 					src={Hamburger}
 					alt='hamburger'
+					id='hamburgerMenu'
 					onClick={() => setOpenMenu(!openMenu)}
 				/>
 			</div>

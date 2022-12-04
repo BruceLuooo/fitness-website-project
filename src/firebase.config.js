@@ -7,7 +7,7 @@ import { getFirestore } from 'firebase/firestore';
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-	apiKey: 'AIzaSyBb4C5O4deOdMZB9A2U2NdiyGzQkg2SYfg',
+	apiKey: `${process.env.REACT_APP_FIREBASE}`,
 	authDomain: 'fitness-website-8c13d.firebaseapp.com',
 	projectId: 'fitness-website-8c13d',
 	storageBucket: 'fitness-website-8c13d.appspot.com',
