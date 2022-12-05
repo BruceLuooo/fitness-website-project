@@ -9,6 +9,7 @@ import useDelay from '../../hooks/useDelay';
 import SearchExercises from '../../components/fitness/SearchExercises';
 import WorkoutLog from '../../components/personalFitness/WorkoutLog';
 import WorkoutPlans from '../../components/personalFitness/WorkoutPlans';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Workout {
 	id: string;
@@ -204,6 +205,17 @@ const PersonalFitness = () => {
 
 		getWorkoutPlans();
 	}, []);
+
+	if (loading) {
+		return (
+			<div css={styles.mainContainer}>
+				<div css={styles.sideBar}>
+					<ProfileSideBar currentState='fitness' />
+				</div>
+				<LoadingSpinner />
+			</div>
+		);
+	}
 
 	return (
 		<div css={styles.mainContainer}>

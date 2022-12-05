@@ -128,9 +128,7 @@ const WorkoutLog = ({ workoutPlans }: Props) => {
 				workoutPlans={workoutPlans}
 			/>
 			{workoutLog.length === 0 ? (
-				<div css={styles.logLayout}>
-					<LoadingSpinner />
-				</div>
+				<div css={styles.logLayout}>No Workous Logged Yet</div>
 			) : (
 				<div>
 					{workoutLog.map((log, index) => (

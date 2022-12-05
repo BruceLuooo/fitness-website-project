@@ -223,10 +223,12 @@ const CreateWorkoutPlan: FC<Props> = ({
 			);
 			await setDoc(docRef, newWorkoutPlan);
 			setError({ active: false, message: '' });
-			setSucessfulPopup(true);
 			window.location.reload();
 		} catch (error) {
-			setSucessfulPopup(true);
+			setError({
+				active: true,
+				message: 'Please Remove / from workout plan name ',
+			});
 		}
 	};
 

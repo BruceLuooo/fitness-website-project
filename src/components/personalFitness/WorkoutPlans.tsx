@@ -191,38 +191,28 @@ const WorkoutPlans = ({ loading, workoutPlans, setWorkoutPlans }: Props) => {
 			<h1 css={styles.largeFont}>My Workout Plans</h1>
 			<div css={styles.workoutPlanLayout}>
 				<div css={styles.workoutPlanNameLayout}>
-					{loading ? (
-						<div>
-							<LoadingSpinner />
-						</div>
+					{workoutPlans.length === 0 ? (
+						<button css={styles.button}>Create your first workout plan</button>
 					) : (
 						<div>
-							{workoutPlans.length === 0 ? (
-								<button css={styles.button}>
-									Create your first workout plan
-								</button>
-							) : (
-								<div>
-									{workoutPlans.map((plan, index) => (
-										<div
-											key={index}
-											css={
-												workoutPlan.index === index
-													? [styles.workoutPlansName, styles.selected]
-													: styles.workoutPlansName
-											}
-											onClick={e => seeWorkoutPlan(e, index, plan)}
-										>
-											<div css={styles.name}>{plan.id}</div>
-											<img
-												css={styles.rightArrowIcon}
-												src={RightArrow}
-												alt='right arrow'
-											/>
-										</div>
-									))}
+							{workoutPlans.map((plan, index) => (
+								<div
+									key={index}
+									css={
+										workoutPlan.index === index
+											? [styles.workoutPlansName, styles.selected]
+											: styles.workoutPlansName
+									}
+									onClick={e => seeWorkoutPlan(e, index, plan)}
+								>
+									<div css={styles.name}>{plan.id}</div>
+									<img
+										css={styles.rightArrowIcon}
+										src={RightArrow}
+										alt='right arrow'
+									/>
 								</div>
-							)}
+							))}
 						</div>
 					)}
 				</div>
